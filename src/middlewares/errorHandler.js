@@ -1,6 +1,8 @@
 import { sendError } from '../utils/apiResponse.js';
 
 const errorHandler = (err, req, res, next) => {
+  console.error(err);
+
   let statusCode = err.statusCode || 500;
   let message    = err.message    || 'Terjadi kesalahan pada server';
   let errors     = Array.isArray(err.errors) ? err.errors : null;
@@ -37,6 +39,16 @@ const errorHandler = (err, req, res, next) => {
   if (err.name === 'TokenExpiredError') {
     statusCode = 401;
     message    = 'Token sudah expired, silakan login ulang';
+  }
+
+  if (err.name === 'MulterError') {
+    statusCode = 400;
+    const multerMessages = {
+      LIMIT_FILE_SIZE:       'Ukuran file melebihi batas maksimum',
+      LIMIT_UNEXPECTED_FILE: 'Field file tidak sesuai / tidak diharapkan',
+      LIMIT_FILE_COUNT:      'Jumlah file melebihi batas maksimum',
+    };
+    message = multerMessages[err.code] || 'Gagal mengunggah file';
   }
 
   const errorType = err.name === 'ValidationError' ? 'ValidationError' : undefined;

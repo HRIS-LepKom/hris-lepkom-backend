@@ -9,6 +9,8 @@ export const ASISTEN_ROLES = [
   "penanggung_jawab_ruangan",
   "koordinator_lapangan",
   "asisten_penilai",
+  "asisten",
+  "staff"
 ];
 
 const asistenSchema = new Schema(
@@ -42,13 +44,11 @@ const asistenSchema = new Schema(
       default: null,
     },
 
-    // Nullable dengan sengaja: asisten lama hasil migrasi atau hasil
-    // konversi dari calas yang baru lolos bisa saja belum diberi role
-    // sampai super admin menetapkannya (saat toggle rekrutmen aktif).
+    // Nullable dengan sengaja: asisten lama hasil migrasi atau hasil konversi dari calas yang baru lolos bisa saja belum diberi role sampai super admin menetapkannya (saat toggle rekrutmen aktif).
     role: {
       type: String,
       enum: ASISTEN_ROLES,
-      default: null,
+      default: "asisten",
     },
 
     password: {
@@ -57,9 +57,7 @@ const asistenSchema = new Schema(
       select: false,
     },
 
-    // Di-set true oleh super admin saat approve permintaan hard reset
-    // password; dipakai untuk memaksa asisten ganti password dulu
-    // sebelum masuk dashboard pada login berikutnya.
+    // Di-set true oleh super admin saat approve permintaan hard reset password; dipakai untuk memaksa asisten ganti password dulu sebelum masuk dashboard pada login berikutnya.
     wajibGantiPassword: {
       type: Boolean,
       default: false,
