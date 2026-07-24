@@ -11,6 +11,11 @@ import notFound             from './middlewares/notFound.middleware.js';
 import errorHandler         from './middlewares/errorHandler.js';
 import asistenAuthRoutes    from './modules/auth/asisten/asistenAuth.routes.js';
 import calasAuthRoutes      from './modules/auth/calas/calasAuth.routes.js';
+import recruitmentRoutes    from './modules/recruitment/recruitment.routes.js';
+import asistenRoutes        from './modules/asisten/asisten.routes.js';
+import calasRoutes          from './modules/calas/calas.routes.js';
+import materiRoutes         from './modules/materi/materi.routes.js';
+import soalRoutes           from './modules/soal/soal.routes.js';
 
 const app = express();
 
@@ -51,6 +56,11 @@ app.use(async (req, res, next) => {
 // ─── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api/auth/asisten', asistenAuthRoutes);
 app.use('/api/auth/calas',   calasAuthRoutes);
+app.use('/api/recruitment',  recruitmentRoutes);
+app.use('/api/asisten',      asistenRoutes);
+app.use('/api/calas',        calasRoutes);
+app.use('/api/materi',       materiRoutes);
+app.use('/api/soal',         soalRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
