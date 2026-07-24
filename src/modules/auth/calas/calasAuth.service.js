@@ -28,9 +28,6 @@ const createTokens = async (calas) => {
   return { accessToken, rawRefreshToken };
 };
 
-// ─── Exports ─────────────────────────────────────────────────────────────────
-
-// Login dengan emailCalas ATAU idCalas.
 export const login = async ({ identifier, password }) => {
   const calas = await Calas.findOne({
     $or: [
@@ -39,7 +36,6 @@ export const login = async ({ identifier, password }) => {
     ],
   }).select('+password');
 
-  // Pesan generik — cegah user enumeration
   const invalidErr = new Error('ID/email atau password salah');
   invalidErr.statusCode = 401;
 
@@ -58,7 +54,6 @@ export const login = async ({ identifier, password }) => {
   return { accessToken, rawRefreshToken, calas: sanitizeCalas(calas) };
 };
 
-// Rotate refresh token — tukar cookie lama dengan yang baru.
 export const refreshAccessToken = async (rawTokens) => {
   const candidates = Array.isArray(rawTokens)
     ? rawTokens.filter(Boolean)
@@ -73,7 +68,7 @@ export const refreshAccessToken = async (rawTokens) => {
   let calas = null;
   for (const raw of candidates) {
     const hashed = crypto.createHash('sha256').update(raw).digest('hex');
-    calas = await Calas.findOne({ refreshToken: hashed }); // eslint-disable-line no-await-in-loop
+    calas = await Calas.findOne({ refreshToken: hashed }); 
     if (calas) break;
   }
 
@@ -89,7 +84,6 @@ export const refreshAccessToken = async (rawTokens) => {
     throw err;
   }
 
-  // Token rotation
   const newRaw    = crypto.randomBytes(40).toString('hex');
   const newHashed = crypto.createHash('sha256').update(newRaw).digest('hex');
   calas.refreshToken = newHashed;
@@ -107,12 +101,11 @@ export const logout = async (rawTokens) => {
 
   for (const raw of candidates) {
     const hashed = crypto.createHash('sha256').update(raw).digest('hex');
-    await Calas.findOneAndUpdate({ refreshToken: hashed }, { refreshToken: null }); // eslint-disable-line no-await-in-loop
+    await Calas.findOneAndUpdate({ refreshToken: hashed }, { refreshToken: null }); 
   }
 };
 
 // Forgot password — kirim email dengan link reset (token berlaku 1 jam).
-// Selalu return sukses meski email/ID tidak ditemukan — cegah user enumeration.
 export const forgotPassword = async ({ identifier }) => {
   const calas = await Calas.findOne({
     $or: [
@@ -139,7 +132,6 @@ export const forgotPassword = async ({ identifier }) => {
   await sendMail({ to: calas.emailCalas, subject, html, text });
 };
 
-// Reset password via token dari link email.
 export const resetPassword = async ({ token, newPassword }) => {
   const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
@@ -154,18 +146,14 @@ export const resetPassword = async ({ token, newPassword }) => {
     throw err;
   }
 
-  // password di-hash otomatis oleh pre-save hook di model
   calas.password            = newPassword;
   calas.resetPasswordToken  = null;
   calas.resetPasswordExpiry = null;
   calas.wajibGantiPassword  = false;
-  // Invalidasi semua sesi yang aktif — paksa login ulang dengan password baru
   calas.refreshToken        = null;
   await calas.save();
 };
 
-// Ganti password — wajib dilakukan calas yang didaftarkan oleh asisten
-// (daftarVia = 'asisten') sebelum bisa mengakses dashboard sepenuhnya.
 export const changePassword = async ({ calasId, newPassword }) => {
   const calas = await Calas.findById(calasId);
 
@@ -175,10 +163,8 @@ export const changePassword = async ({ calasId, newPassword }) => {
     throw err;
   }
 
-  // password di-hash otomatis oleh pre-save hook di model
   calas.password            = newPassword;
   calas.wajibGantiPassword  = false;
-  // Invalidasi sesi — frontend diarahkan ke login ulang dengan password baru
   calas.refreshToken        = null;
   await calas.save();
 
