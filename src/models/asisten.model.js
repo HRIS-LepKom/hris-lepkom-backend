@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import bcrypt from 'bcrypt';
 
 const { Schema } = mongoose;
 
@@ -73,6 +73,20 @@ const asistenSchema = new Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    refreshToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    resetPasswordToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    resetPasswordExpiry: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }

@@ -9,6 +9,8 @@ import connectDB            from './config/db.js';
 import { sanitizer }        from './middlewares/sanitizer.middleware.js';
 import notFound             from './middlewares/notFound.middleware.js';
 import errorHandler         from './middlewares/errorHandler.js';
+import asistenAuthRoutes    from './modules/auth/asisten/asistenAuth.routes.js';
+import calasAuthRoutes      from './modules/auth/calas/calasAuth.routes.js';
 
 const app = express();
 
@@ -45,6 +47,10 @@ app.use(async (req, res, next) => {
     next(new Error('Koneksi database gagal'));
   }
 });
+
+// ─── Routes ──────────────────────────────────────────────────────────────────
+app.use('/api/auth/asisten', asistenAuthRoutes);
+app.use('/api/auth/calas',   calasAuthRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
