@@ -8,7 +8,6 @@ import * as ctrl                    from './soal.controller.js';
 
 const router     = Router();
 
-// Gunakan middleware upload yang sudah ada — tipe 'soal', max 2 MB
 const uploadSoal = createUploadMiddleware('soal', 2);
 
 // Semua route butuh login sebagai asisten

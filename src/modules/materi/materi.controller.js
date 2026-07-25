@@ -17,6 +17,11 @@ export const getAuthors = asyncHandler(async (req, res) => {
   sendSuccess(res, authors, 'Daftar asisten pembuat materi berhasil diambil', 200);
 });
 
+export const getNames = asyncHandler(async (req, res) => {
+  const names = await materiService.getNames(req.query);
+  sendSuccess(res, names, 'Daftar nama materi berhasil diambil');
+});
+
 export const getOne = asyncHandler(async (req, res) => {
   const materi = await materiService.getOne(req.params.id);
   sendSuccess(res, materi, 'Detail materi berhasil diambil');

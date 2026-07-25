@@ -13,6 +13,7 @@ router.use(asistenAuth);
 // ─── Read (Bisa diakses oleh semua asisten) ───────────────────────────
 router.get('/',        ctrl.getAll);
 router.get('/authors', ctrl.getAuthors);
+router.get('/names',   ctrl.getNames);
 router.get('/:id',     ctrl.getOne);
 
 // ─── Write (Hanya super_admin & pj_soal_materi) ───────────────────────

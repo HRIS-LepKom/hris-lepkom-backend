@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -14,15 +14,30 @@ const questionCardSchema = new Schema(
       trim: true,
       default: null,
     },
+    kategori: {
+      type: String,
+      required: true,
+      enum: ['materi', 'teknis', 'kepribadian', 'motivasi'],
+    },
+    tingkat: {
+      type: Number,
+      required: true,
+      enum: [1, 2, 3],
+    },
+    namaMateri: {
+      type: String,
+      trim: true,
+      default: null,
+    },
     dibuatOleh: {
       type: Schema.Types.ObjectId,
-      ref: "Asisten",
+      ref: 'Asisten',
       default: null,
     },
   },
   { timestamps: true }
 );
 
-const QuestionCard = mongoose.model("QuestionCard", questionCardSchema);
+const QuestionCard = mongoose.model('QuestionCard', questionCardSchema);
 
 export default QuestionCard;

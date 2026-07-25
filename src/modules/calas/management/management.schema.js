@@ -1,9 +1,8 @@
-// File: src/modules/calas/calas.schema.js
 export const createSchema = {
   type: 'object',
   required: [
-    'idCalas', 'npm', 'namaCalas', 'kelas', 'jenisKelamin', 
-    'noKtp', 'noHp', 'emailCalas', 'tempatLahir', 'tanggalLahir', 
+    'idCalas', 'npm', 'namaCalas', 'kelas', 'jenisKelamin',
+    'noKtp', 'noHp', 'emailCalas', 'tempatLahir', 'tanggalLahir',
     'alamatLengkap', 'asalSekolah', 'jurusan', 'ipk', 'noHpOrtu'
   ],
   additionalProperties: false,

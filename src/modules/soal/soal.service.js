@@ -1,6 +1,7 @@
 import Soal from '../../models/soal.model.js';
 import { getPaginationParams, buildPaginationMeta } from '../../utils/paginate.js';
 import { deleteFromSupabase } from '../../utils/uploadHelper.js';
+import { buildSmartFilter } from '../../utils/buildSmartFilter.js';
 
 const PJ_ROLES = ['super_admin', 'pj_soal_materi'];
 
@@ -9,16 +10,19 @@ export const getAll = async (query, requesterRole) => {
   const isPjOrAdmin = PJ_ROLES.includes(requesterRole);
 
   const filter = {};
-
   if (!isPjOrAdmin) {
     filter.isViewed = true;
   } else if (query.isViewed !== undefined) {
     filter.isViewed = query.isViewed === 'true';
   }
 
-  if (query.materiRef)   filter.materiRef  = query.materiRef;
-  if (query.tingkat)     filter.tingkat    = Number(query.tingkat);
-  if (query.dibuatOleh)  filter.dibuatOleh = query.dibuatOleh;
+  const smartFilter = buildSmartFilter(query, {
+    materiRef:  { type: 'string' },
+    tingkat:    { type: 'number' },
+    dibuatOleh: { type: 'string' },
+  });
+  Object.assign(filter, smartFilter);
+
   if (query.search) {
     filter.judulSoal = { $regex: query.search, $options: 'i' };
   }

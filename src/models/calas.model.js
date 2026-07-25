@@ -169,6 +169,14 @@ const calasSchema = new Schema(
       type: String,
       default: null,
     },
+    jawabanPraktek: {
+      type: String,
+      default: null,
+    },
+    jawabanProject: {
+      type: String,
+      default: null,
+    },
 
     statusRekrutmen: {
       tahapSaatIni: {

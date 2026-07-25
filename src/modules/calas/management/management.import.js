@@ -1,20 +1,20 @@
 import * as XLSX from 'xlsx';
-import Calas from '../../models/calas.model.js';
-import { getDefaultPassword } from '../../utils/defaultPassword.js';
-import { sanitizeCalas } from './calas.service.js';
+import Calas from '../../../models/calas.model.js';
+import { getDefaultPassword } from '../../../utils/defaultPassword.js';
+import { sanitizeCalas } from './management.service.js';
 import dayjs from 'dayjs';
 
 const REQUIRED_COLS = [
-  'idCalas', 'npm', 'namaCalas', 'kelas', 'jenisKelamin', 
-  'noKtp', 'noHp', 'emailCalas', 'tempatLahir', 'tanggalLahir', 
+  'idCalas', 'npm', 'namaCalas', 'kelas', 'jenisKelamin',
+  'noKtp', 'noHp', 'emailCalas', 'tempatLahir', 'tanggalLahir',
   'alamatLengkap', 'asalSekolah', 'jurusan', 'ipk', 'noHpOrtu'
 ];
 
 const TEMPLATE_HEADERS = [
-  'idCalas', 'npm', 'namaCalas', 'kelas', 'jenisKelamin', 
-  'noKtp', 'noHp', 'emailCalas', 'tempatLahir', 'tanggalLahir (YYYY-MM-DD)', 
-  'alamatLengkap', 'asalSekolah', 'wilayah', 'jurusan', 'ipk', 
-  'namaIbu', 'namaAyah', 'noHpOrtu', 'kemampuanPribadi', 
+  'idCalas', 'npm', 'namaCalas', 'kelas', 'jenisKelamin',
+  'noKtp', 'noHp', 'emailCalas', 'tempatLahir', 'tanggalLahir (YYYY-MM-DD)',
+  'alamatLengkap', 'asalSekolah', 'wilayah', 'jurusan', 'ipk',
+  'namaIbu', 'namaAyah', 'noHpOrtu', 'kemampuanPribadi',
   'kemampuanIt', 'pengalamanOrganisasi', 'pengalamanKerja'
 ];
 
@@ -30,7 +30,7 @@ const parseRow = (row, index) => {
   const missing = REQUIRED_COLS.filter((col) => !String(row[col] ?? '').trim() && !col.includes('tanggalLahir'));
   const tanggalKey = Object.keys(row).find(k => k.includes('tanggalLahir')) || 'tanggalLahir';
   if (!String(row[tanggalKey] ?? '').trim()) {
-      missing.push('tanggalLahir');
+    missing.push('tanggalLahir');
   }
 
   if (missing.length) {

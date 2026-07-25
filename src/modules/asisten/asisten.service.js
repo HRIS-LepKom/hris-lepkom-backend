@@ -6,6 +6,7 @@ import Soal from '../../models/soal.model.js';
 import { ASISTEN_ROLES } from '../../models/asisten.model.js';
 import { getDefaultPassword } from '../../utils/defaultPassword.js';
 import { getPaginationParams, buildPaginationMeta } from '../../utils/paginate.js';
+import { buildSmartFilter } from '../../utils/buildSmartFilter.js';
 
 // ─── Private Helper ───────────────────────────────────────────────────────────
 
@@ -66,10 +67,13 @@ export const getAll = async (query) => {
   const { page, limit, skip } = getPaginationParams(query);
   const activeRecruitment = await isRecruitmentActive();
 
-  const filter = {};
-  if (query.role) filter.role = query.role;
-  if (query.kelasSaatIni) filter.kelasSaatIni = query.kelasSaatIni;
-  
+  const smartFilter = buildSmartFilter(query, {
+    role:         { type: 'string' },
+    kelasSaatIni: { type: 'string' },
+  });
+
+  const filter = { ...smartFilter };
+
   if (query.search) {
     filter.$or = [
       { nama:      { $regex: query.search, $options: 'i' } },
@@ -82,23 +86,18 @@ export const getAll = async (query) => {
   if (query.sortBy) {
     sortOptions[query.sortBy] = query.sortOrder === 'desc' ? -1 : 1;
   } else {
-    sortOptions.nama = 1; 
+    sortOptions.nama = 1;
   }
 
   let selectFields = 'idAsisten npm nama kelasSaatIni';
-  if (activeRecruitment) {
-    selectFields += ' role';
-  }
+  if (activeRecruitment) selectFields += ' role';
 
   const [data, total] = await Promise.all([
     Asisten.find(filter).select(selectFields).sort(sortOptions).skip(skip).limit(limit).lean(),
     Asisten.countDocuments(filter),
   ]);
 
-  return {
-    data,
-    meta: buildPaginationMeta(total, page, limit),
-  };
+  return { data, meta: buildPaginationMeta(total, page, limit) };
 };
 
 export const getOne = async (id) => {

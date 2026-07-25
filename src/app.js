@@ -13,9 +13,17 @@ import asistenAuthRoutes    from './modules/auth/asisten/asistenAuth.routes.js';
 import calasAuthRoutes      from './modules/auth/calas/calasAuth.routes.js';
 import recruitmentRoutes    from './modules/recruitment/recruitment.routes.js';
 import asistenRoutes        from './modules/asisten/asisten.routes.js';
-import calasRoutes          from './modules/calas/calas.routes.js';
+import calasRoutes          from './modules/calas/management/management.routes.js';
 import materiRoutes         from './modules/materi/materi.routes.js';
 import soalRoutes           from './modules/soal/soal.routes.js';
+import questionCardRoutes   from './modules/questionCard/questionCard.routes.js';
+import sessionRoutes        from './modules/ujian/session/session.routes.js';
+import roomAssignmentRoutes from './modules/ujian/roomAssignment/roomAssignment.routes.js';
+import roomPlacementRoutes  from './modules/ujian/roomPlacement/roomPlacement.routes.js';
+import jawabanRoutes        from './modules/ujian/jawaban/jawaban.routes.js';
+import penilaianRoutes      from './modules/penilaian/penilaian.routes.js';
+import announcementRoutes   from './modules/announcement/announcement.routes.js';
+import dashboardRoutes      from './modules/dashboard/dashboard.routes.js';
 
 const app = express();
 
@@ -60,7 +68,15 @@ app.use('/api/recruitment',  recruitmentRoutes);
 app.use('/api/asisten',      asistenRoutes);
 app.use('/api/calas',        calasRoutes);
 app.use('/api/materi',       materiRoutes);
-app.use('/api/soal',         soalRoutes);
+app.use('/api/soal',          soalRoutes);
+app.use('/api/question-card', questionCardRoutes);
+app.use('/api/ujian/session',         sessionRoutes);
+app.use('/api/ujian/room-assignment', roomAssignmentRoutes);
+app.use('/api/ujian/room-placement',  roomPlacementRoutes);
+app.use('/api/ujian/jawaban',         jawabanRoutes);
+app.use('/api/penilaian',             penilaianRoutes);
+app.use('/api/announcement',          announcementRoutes);
+app.use('/api/dashboard',             dashboardRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
