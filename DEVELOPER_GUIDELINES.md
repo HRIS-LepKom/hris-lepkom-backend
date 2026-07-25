@@ -8,7 +8,7 @@ Sistem ini dirancang sebagai *legacy app* jangka panjang. Baca dokumen ini dari 
 
 ## Daftar Isi
 
-1. [Aturan Emas (The Golden Rule)](#1-aturan-emas-the-golden-rule)
+1. [Aturan](#1-aturan-emas-the-golden-rule)
 2. [Arsitektur Overview](#2-arsitektur-overview)
 3. [Request Pipeline (Middleware Chain)](#3-request-pipeline-middleware-chain)
 4. [Pola Modul (Routes → Controller → Service)](#4-pola-modul-routes--controller--service)
@@ -22,9 +22,9 @@ Sistem ini dirancang sebagai *legacy app* jangka panjang. Baca dokumen ini dari 
 
 ---
 
-## 1. Aturan Emas (The Golden Rule)
+## 1. Aturan
 
-### 🔴 MAKSIMAL 250 BARIS PER FILE!
+### MAKSIMAL 250 BARIS PER FILE!
 Ini adalah aturan paling absolut dalam codebase ini. **Tidak ada satu pun file (kecuali folder `templates/`) yang boleh melebihi 250 baris.**
 
 **Kenapa?** 
