@@ -1,11 +1,4 @@
 import mongoose from 'mongoose';
-import dns      from 'node:dns';
-
-const isLoopback = (s) => s.startsWith('127.') || s === '::1';
-const dnsServers = dns.getServers();
-if (dnsServers.length === 0 || dnsServers.every(isLoopback)) {
-  dns.setServers(['1.1.1.1', '8.8.8.8']);
-}
 
 let cached = global.mongoose;
 
