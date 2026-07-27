@@ -2,22 +2,26 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
-const recruitmentSettingSchema = new Schema(
+const recruitmentSchema = new Schema(
   {
-    // field kunci tetap, dibuat unique — supaya cuma boleh ada 1 dokumen (singleton)
-    key: {
+    gelombangAktif: {
       type: String,
-      default: "recruitment_setting",
+      required: true,
       unique: true,
+      trim: true,
+    },
+    keterangan: {
+      type: String,
+      default: "",
     },
     isActive: {
       type: Boolean,
-      default: false,
+      default: true, // as requested: default active when created
     },
-    // dipakai buat ngisi otomatis field gelombangDaftar saat calas baru daftar
-    gelombangAktif: {
-      type: String,
-      default: null,
+    dibuatOleh: {
+      type: Schema.Types.ObjectId,
+      ref: "Asisten",
+      required: true,
     },
     diaktifkanOleh: {
       type: Schema.Types.ObjectId,
@@ -41,6 +45,6 @@ const recruitmentSettingSchema = new Schema(
   { timestamps: true }
 );
 
-const RecruitmentSetting = mongoose.model("RecruitmentSetting", recruitmentSettingSchema);
+const Recruitment = mongoose.model("Recruitment", recruitmentSchema);
 
-export default RecruitmentSetting;
+export default Recruitment;

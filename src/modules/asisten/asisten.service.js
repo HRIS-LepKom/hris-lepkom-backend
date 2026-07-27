@@ -1,6 +1,6 @@
 import Asisten from '../../models/asisten.model.js';
 import Calas from '../../models/calas.model.js';
-import RecruitmentSetting from '../../models/recruitmentSetting.model.js';
+import Recruitment from '../../models/recruitment.model.js';
 import Materi from '../../models/materi.model.js';
 import Soal from '../../models/soal.model.js';
 import { ASISTEN_ROLES } from '../../models/asisten.model.js';
@@ -26,8 +26,8 @@ export const sanitizeAsisten = (a) => ({
 });
 
 const isRecruitmentActive = async () => {
-  const setting = await RecruitmentSetting.findOne({ key: 'recruitment_setting' });
-  return setting?.isActive === true;
+  const activeRecruitment = await Recruitment.findOne({ isActive: true });
+  return !!activeRecruitment;
 };
 
 const getAsistenHistory = async (asistenId, role) => {

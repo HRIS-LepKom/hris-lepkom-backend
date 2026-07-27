@@ -1,11 +1,11 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import { sendError } from '../utils/apiResponse.js';
-import RecruitmentSetting from '../models/recruitmentSetting.model.js';
+import Recruitment from '../models/recruitment.model.js';
 
 export const requireRecruitmentActive = asyncHandler(async (req, res, next) => {
-  const setting = await RecruitmentSetting.findOne();
+  const activeRecruitment = await Recruitment.findOne({ isActive: true });
 
-  if (!setting?.isActive) {
+  if (!activeRecruitment) {
     return sendError(
       res,
       'Fitur ini hanya bisa diakses saat periode rekrutmen sedang aktif',
@@ -13,6 +13,6 @@ export const requireRecruitmentActive = asyncHandler(async (req, res, next) => {
     );
   }
 
-  req.recruitmentSetting = setting;
+  req.recruitmentSetting = activeRecruitment;
   next();
 });

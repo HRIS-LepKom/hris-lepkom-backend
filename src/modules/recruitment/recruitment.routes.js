@@ -10,13 +10,25 @@ const router = Router();
 // Semua endpoint di module ini hanya bisa diakses super admin
 router.use(asistenAuth, requireRole('super_admin'));
 
-// GET  /api/recruitment/status — cek status toggle + info audit
-router.get('/status', ctrl.getStatus);
+// GET  /api/recruitment
+router.get('/', ctrl.getAll);
 
-// PATCH /api/recruitment/activate — aktifkan periode rekrutmen
-router.patch('/activate', validate(schema.activateSchema), ctrl.activate);
+// GET  /api/recruitment/:id
+router.get('/:id', ctrl.getOne);
 
-// PATCH /api/recruitment/deactivate — nonaktifkan periode rekrutmen
-router.patch('/deactivate', ctrl.deactivate);
+// POST /api/recruitment
+router.post('/', validate(schema.createSchema), ctrl.create);
+
+// PUT  /api/recruitment/:id
+router.put('/:id', validate(schema.updateSchema), ctrl.update);
+
+// PATCH /api/recruitment/:id/activate
+router.patch('/:id/activate', ctrl.activate);
+
+// PATCH /api/recruitment/:id/deactivate
+router.patch('/:id/deactivate', ctrl.deactivate);
+
+// DELETE /api/recruitment/:id
+router.delete('/:id', ctrl.hardDelete);
 
 export default router;
