@@ -17,7 +17,7 @@ export const getAll = async (query) => {
     filter.gelombangAktif = { $regex: query.search, $options: 'i' };
   }
 
-  const ALLOWED_SORT_FIELDS = ['gelombangAktif', 'isActive', 'createdAt'];
+  const ALLOWED_SORT_FIELDS = ['gelombangAktif', 'isActive', 'createdAt, diaktifkanPada'];
   const sortField = ALLOWED_SORT_FIELDS.includes(query.sortBy) ? query.sortBy : 'createdAt';
   const sortDir = query.sortOrder === 'asc' ? 1 : -1;
 

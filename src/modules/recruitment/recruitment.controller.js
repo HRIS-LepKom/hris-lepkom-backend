@@ -4,7 +4,7 @@ import * as recruitmentService from './recruitment.service.js';
 
 export const getAll = asyncHandler(async (req, res) => {
   const result = await recruitmentService.getAll(req.query);
-  sendSuccess(res, result.data, 'Daftar gelombang rekrutmen berhasil diambil', result.meta);
+  sendSuccess(res, result.data, 'Daftar gelombang rekrutmen berhasil diambil', 200, result.meta);
 });
 
 export const getOne = asyncHandler(async (req, res) => {
@@ -14,7 +14,7 @@ export const getOne = asyncHandler(async (req, res) => {
 
 export const create = asyncHandler(async (req, res) => {
   const rec = await recruitmentService.create(req.body, req.asisten._id);
-  sendSuccess(res, rec, 'Gelombang rekrutmen berhasil dibuat dan diaktifkan', null, 201);
+  sendSuccess(res, rec, 'Gelombang rekrutmen berhasil dibuat dan diaktifkan', 201);
 });
 
 export const update = asyncHandler(async (req, res) => {
