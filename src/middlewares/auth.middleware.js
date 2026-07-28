@@ -28,8 +28,11 @@ const createAuthMiddleware = ({ Model, reqKey, statusCheck }) =>
       return sendError(res, 'Akun tidak ditemukan', 401);
     }
 
-    if (statusCheck && !statusCheck.isAllowed(user)) {
-      return sendError(res, statusCheck.message, 403);
+    if (statusCheck) {
+      const { allowed, message } = statusCheck.isAllowed(user, req);
+      if (!allowed) {
+        return sendError(res, message || statusCheck.message, 403);
+      }
     }
 
     req[reqKey] = user;
@@ -40,8 +43,23 @@ export const asistenAuth = createAuthMiddleware({
   Model: Asisten,
   reqKey: 'asisten',
   statusCheck: {
-    isAllowed: (asisten) => asisten.isActive,
-    message: 'Akun tidak aktif',
+    isAllowed: (asisten, req) => {
+      if (!asisten.isActive) {
+        return { allowed: false, message: 'Akun tidak aktif' };
+      }
+      
+      if (asisten.wajibGantiPassword) {
+        const path = req.originalUrl || '';
+        if (!path.includes('/change-password') && !path.includes('/logout')) {
+          return { 
+            allowed: false, 
+            message: 'Anda diwajibkan mengganti password sebelum mengakses sistem' 
+          };
+        }
+      }
+      
+      return { allowed: true };
+    },
   },
 });
 
@@ -49,7 +67,9 @@ export const calasAuth = createAuthMiddleware({
   Model: Calas,
   reqKey: 'calas',
   statusCheck: {
-    isAllowed: (calas) => !calas.isBanned,
-    message: 'Akun Anda telah diblokir',
+    isAllowed: (calas) => ({
+      allowed: !calas.isBanned,
+      message: 'Akun Anda telah diblokir',
+    }),
   },
 });

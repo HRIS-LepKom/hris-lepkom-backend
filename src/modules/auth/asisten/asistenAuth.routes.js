@@ -31,6 +31,9 @@ router.post('/logout', ctrl.logout);
 // POST /api/auth/asisten/request-hard-reset — asisten ajukan reset password ke super admin
 router.post('/request-hard-reset', authLimiter, validate(schema.requestHardResetSchema), ctrl.requestHardReset);
 
+// GET /api/auth/asisten/hard-reset-requests — super admin lihat daftar request
+router.get('/hard-reset-requests', asistenAuth, requireRole('super_admin'), ctrl.getHardResetRequests);
+
 // POST /api/auth/asisten/approve-hard-reset/:requestId — super admin setujui
 router.post('/approve-hard-reset/:requestId', asistenAuth, requireRole('super_admin'), ctrl.approveHardReset);
 

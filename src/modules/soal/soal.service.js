@@ -86,15 +86,21 @@ export const create = async (data, asistenId) => {
 
 export const update = async (id, data) => {
   try {
-    const soal = await Soal.findByIdAndUpdate(id, data, { new: true, runValidators: true })
-      .populate('materiRef',  'namaMateri tingkat')
-      .populate('dibuatOleh', 'nama idAsisten');
-
-    if (!soal) {
+    const existingSoal = await Soal.findById(id);
+    if (!existingSoal) {
       const err = new Error('Soal tidak ditemukan');
       err.statusCode = 404;
       throw err;
     }
+
+    if (existingSoal.file && data.file !== undefined && existingSoal.file !== data.file) {
+      await deleteFromSupabase(existingSoal.file);
+    }
+
+    const soal = await Soal.findByIdAndUpdate(id, data, { new: true, runValidators: true })
+      .populate('materiRef',  'namaMateri tingkat')
+      .populate('dibuatOleh', 'nama idAsisten');
+
     return soal;
   } catch (error) {
     if (error.code === 11000) {

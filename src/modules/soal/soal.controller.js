@@ -19,7 +19,7 @@ export const getOne = asyncHandler(async (req, res) => {
 
 export const create = asyncHandler(async (req, res) => {
   const soal = await soalService.create(req.body, req.asisten._id);
-  sendSuccess(res, soal, 'Soal berhasil ditambahkan. Silakan upload file melalui PATCH /api/soal/:id/file', 201);
+  sendSuccess(res, soal, 'Soal berhasil ditambahkan', 201);
 });
 
 export const update = asyncHandler(async (req, res) => {
@@ -42,22 +42,28 @@ export const hardDelete = asyncHandler(async (req, res) => {
 
 // ─── File Operations ──────────────────────────────────────────────────────────
 
-export const uploadFile = asyncHandler(async (req, res) => {
+export const uploadTempFile = asyncHandler(async (req, res) => {
   if (!req.file) {
     const err = new Error(
       'File tidak ditemukan pada request. ' +
-      'Pastikan file dikirim dengan field name "file" dan format PDF atau DOCX (maks. 2 MB)'
+      'Pastikan file dikirim dengan field name "file" dan format PDF atau DOCX (maks. 5 MB)'
     );
     err.statusCode = 400;
     throw err;
   }
-  const soal = await soalFileService.uploadFile(req.params.id, req.file);
-  sendSuccess(res, soal, 'File soal berhasil diupload');
+  const result = await soalFileService.uploadTempFile(req.file);
+  sendSuccess(res, result, 'File berhasil diunggah ke storage');
 });
 
-export const deleteFile = asyncHandler(async (req, res) => {
-  const result = await soalFileService.deleteFile(req.params.id);
-  sendSuccess(res, result, result.pesan);
+export const deleteTempFile = asyncHandler(async (req, res) => {
+  const { fileUrl } = req.body;
+  if (!fileUrl) {
+    const err = new Error('URL file tidak diberikan');
+    err.statusCode = 400;
+    throw err;
+  }
+  await soalFileService.deleteTempFile(fileUrl);
+  sendSuccess(res, null, 'File berhasil dihapus dari storage');
 });
 
 export const downloadFile = asyncHandler(async (req, res) => {

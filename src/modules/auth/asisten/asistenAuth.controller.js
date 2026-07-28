@@ -59,3 +59,8 @@ export const changePassword = asyncHandler(async (req, res) => {
   });
   sendSuccess(res, result, 'Password berhasil diubah');
 });
+
+export const getHardResetRequests = asyncHandler(async (req, res) => {
+  const result = await asistenAuthService.getAllHardResetRequests(req.query);
+  sendSuccess(res, result, 'Berhasil mendapatkan daftar request reset password');
+});

@@ -8,7 +8,7 @@ import * as ctrl                    from './soal.controller.js';
 
 const router     = Router();
 
-const uploadSoal = createUploadMiddleware('soal', 2);
+const uploadSoal = createUploadMiddleware('soal', 5);
 
 // Semua route butuh login sebagai asisten
 router.use(asistenAuth);
@@ -39,15 +39,15 @@ router.patch('/:id/toggle-view',
 );
 
 // ─── File Operations — pj_soal_materi & super_admin ──────────────────────────
-router.patch('/:id/file',
+router.post('/temp-file',
   requireRole('pj_soal_materi'),
   uploadSoal.single('file'),
-  ctrl.uploadFile
+  ctrl.uploadTempFile
 );
 
-router.delete('/:id/file',
+router.delete('/temp-file',
   requireRole('pj_soal_materi'),
-  ctrl.deleteFile
+  ctrl.deleteTempFile
 );
 
 // ─── Hard Delete soal + file ──────────────────────────────────────────────────

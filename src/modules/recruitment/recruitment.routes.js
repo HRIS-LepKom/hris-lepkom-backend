@@ -7,28 +7,31 @@ import * as ctrl       from './recruitment.controller.js';
 
 const router = Router();
 
-// Semua endpoint di module ini hanya bisa diakses super admin
-router.use(asistenAuth, requireRole('super_admin'));
+// Kita butuh asisten biasa bisa melihat data rekrutmen (misal untuk cek status aktif)
+router.use(asistenAuth);
 
-// GET  /api/recruitment
+// GET  /api/recruitment (Bisa diakses semua asisten)
 router.get('/', ctrl.getAll);
 
-// GET  /api/recruitment/:id
+// GET  /api/recruitment/:id (Bisa diakses semua asisten)
 router.get('/:id', ctrl.getOne);
 
+// Endpoint di bawah ini hanya bisa diakses super admin
+const onlySuperAdmin = requireRole('super_admin');
+
 // POST /api/recruitment
-router.post('/', validate(schema.createSchema), ctrl.create);
+router.post('/', onlySuperAdmin, validate(schema.createSchema), ctrl.create);
 
 // PUT  /api/recruitment/:id
-router.put('/:id', validate(schema.updateSchema), ctrl.update);
+router.put('/:id', onlySuperAdmin, validate(schema.updateSchema), ctrl.update);
 
 // PATCH /api/recruitment/:id/activate
-router.patch('/:id/activate', ctrl.activate);
+router.patch('/:id/activate', onlySuperAdmin, ctrl.activate);
 
 // PATCH /api/recruitment/:id/deactivate
-router.patch('/:id/deactivate', ctrl.deactivate);
+router.patch('/:id/deactivate', onlySuperAdmin, ctrl.deactivate);
 
 // DELETE /api/recruitment/:id
-router.delete('/:id', ctrl.hardDelete);
+router.delete('/:id', onlySuperAdmin, ctrl.hardDelete);
 
 export default router;

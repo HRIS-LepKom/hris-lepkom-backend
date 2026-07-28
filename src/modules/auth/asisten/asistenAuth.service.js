@@ -215,3 +215,67 @@ export const changePassword = async ({ asistenId, newPassword }) => {
 
   return { asistenId: asisten._id };
 };
+
+export const getAllHardResetRequests = async (query) => {
+  const page = parseInt(query.page, 10) || 1;
+  const limit = parseInt(query.limit, 10) || 10;
+  const skip = (page - 1) * limit;
+
+  const filter = {};
+
+  if (query.status) {
+    filter.status = query.status;
+  }
+
+  // Handle search by inputAwal OR asisten name
+  if (query.search) {
+    const asistenIds = await Asisten.find({
+      nama: { $regex: query.search, $options: 'i' }
+    }).select('_id');
+    
+    filter.$or = [
+      { inputAwal: { $regex: query.search, $options: 'i' } },
+      { asistenRef: { $in: asistenIds.map(a => a._id) } }
+    ];
+  }
+
+  const sortOptions = {};
+  if (query.sortBy) {
+    sortOptions[query.sortBy] = query.sortOrder === 'asc' ? 1 : -1;
+  } else {
+    sortOptions.createdAt = -1;
+  }
+
+  // Get raw data first to handle potential deleted asisten
+  const rawData = await HardResetRequest.find(filter)
+    .populate('asistenRef', 'idAsisten npm nama email role isActive')
+    .populate('disetujuiOleh', 'idAsisten nama')
+    .sort(sortOptions)
+    .lean();
+
+  // Filter out records where asistenRef is null (asisten deleted)
+  // and optionally we could delete them from DB, but for now we just filter them from the response
+  const validData = rawData.filter(item => item.asistenRef != null);
+  
+  // Cleanup database from orphaned requests asynchronously
+  const orphanedIds = rawData.filter(item => item.asistenRef == null).map(item => item._id);
+  if (orphanedIds.length > 0) {
+    HardResetRequest.deleteMany({ _id: { $in: orphanedIds } }).exec().catch(err => console.error('Failed to cleanup orphaned requests:', err));
+  }
+
+  // Calculate pagination manually on valid data
+  const total = validData.length;
+  const totalPages = Math.ceil(total / limit);
+  const data = validData.slice(skip, skip + limit);
+
+  const meta = {
+    total,
+    page,
+    limit,
+    totalPages,
+    hasNextPage: page < totalPages,
+    hasPrevPage: page > 1,
+  };
+
+  return { data, meta };
+};

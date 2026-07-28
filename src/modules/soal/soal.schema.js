@@ -6,6 +6,7 @@ export const createSchema = {
     judulSoal: { type: 'string', minLength: 1 },
     materiRef: { type: 'string', minLength: 1 },
     tingkat:   { type: 'integer', enum: [1, 2, 3] },
+    file:      { type: ['string', 'null'] },
   },
 };
 
@@ -17,5 +18,6 @@ export const updateSchema = {
     judulSoal: { type: 'string', minLength: 1 },
     materiRef: { type: 'string', minLength: 1 },
     tingkat:   { type: 'integer', enum: [1, 2, 3] },
+    file:      { type: ['string', 'null'] },
   },
 };
