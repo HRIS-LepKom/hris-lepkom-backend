@@ -1,7 +1,7 @@
 import { ASISTEN_ROLES } from '../../models/asisten.model.js';
 
-const ALLOWED_ROLES = ASISTEN_ROLES.filter((r) => r !== 'super_admin');
-
+// Dalam updateRole, Super Admin dapat mengubah role asisten ke role apa saja termasuk super_admin.
+// Validasi logic (dynamic) akan dilakukan di service.
 export const createSchema = {
   type: 'object',
   required: ['idAsisten', 'npm', 'nama'],
@@ -12,7 +12,7 @@ export const createSchema = {
     nama:         { type: 'string', minLength: 2, maxLength: 100 },
     email:        { type: 'string', pattern: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$' },
     kelasSaatIni: { type: 'string', maxLength: 20 },
-    role:         { type: 'string', enum: ALLOWED_ROLES },
+    role:         { type: 'string', enum: ASISTEN_ROLES },
   },
 };
 
@@ -21,8 +21,9 @@ export const updateSchema = {
   additionalProperties: false,
   minProperties: 1,
   properties: {
+    idAsisten:    { type: 'string', minLength: 1, maxLength: 50 },
+    npm:          { type: 'string', minLength: 1, maxLength: 20 },
     nama:         { type: 'string', minLength: 2, maxLength: 100 },
-    email:        { type: 'string', pattern: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$' },
     kelasSaatIni: { type: 'string', maxLength: 20 },
   },
 };
@@ -32,11 +33,10 @@ export const updateMeSchema = {
   additionalProperties: false,
   minProperties: 1,
   properties: {
-    idAsisten:    { type: 'string', minLength: 1 },
-    npm:          { type: 'string', minLength: 1 },
-    nama:         { type: 'string', minLength: 1 },
+    npm:          { type: 'string', minLength: 1, maxLength: 20 },
+    nama:         { type: 'string', minLength: 2, maxLength: 100 },
     email:        { type: 'string', format: 'email' },
-    kelasSaatIni: { type: 'string' },
+    kelasSaatIni: { type: 'string', maxLength: 20 },
   },
 };
 
@@ -45,7 +45,7 @@ export const updateRoleSchema = {
   required: ['role'],
   additionalProperties: false,
   properties: {
-    role: { type: 'string', enum: ALLOWED_ROLES },
+    role: { type: 'string', enum: ASISTEN_ROLES },
   },
 };
 

@@ -1,4 +1,5 @@
 import Recruitment from '../../models/recruitment.model.js';
+import Asisten from '../../models/asisten.model.js';
 import { getPaginationParams, buildPaginationMeta } from '../../utils/paginate.js';
 import { buildSmartFilter } from '../../utils/buildSmartFilter.js';
 
@@ -147,6 +148,17 @@ export const deactivate = async (id, asistenId) => {
   rec.dinonaktifkanOleh = asistenId;
   rec.dinonaktifkanPada = new Date();
   await rec.save();
+
+  // Ambil semua asisten yang rolenya BUKAN 'super_admin' dan BUKAN 'asisten'
+  const assistantsToReset = await Asisten.find({
+    role: { $nin: ['super_admin', 'asisten'] }
+  });
+
+  // Iterasi satu per satu sesuai instruksi
+  for (const asisten of assistantsToReset) {
+    asisten.role = 'asisten';
+    await asisten.save();
+  }
 
   return await rec.populate('dinonaktifkanOleh', 'nama idAsisten');
 };

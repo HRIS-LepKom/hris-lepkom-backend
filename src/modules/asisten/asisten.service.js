@@ -68,11 +68,20 @@ export const getAll = async (query) => {
   const activeRecruitment = await isRecruitmentActive();
 
   const smartFilter = buildSmartFilter(query, {
-    role:         { type: 'string' },
-    kelasSaatIni: { type: 'string' },
+    role: { type: 'string' },
   });
 
   const filter = { ...smartFilter };
+
+  if (query.tingkat) {
+    if (query.tingkat.toUpperCase() === 'NON CLASS') {
+      filter.kelasSaatIni = { $regex: '^NON CLASS$', $options: 'i' };
+    } else {
+      filter.kelasSaatIni = { $regex: `^${query.tingkat}`, $options: 'i' };
+    }
+  } else if (query.kelasSaatIni) {
+    filter.kelasSaatIni = query.kelasSaatIni;
+  }
 
   if (query.search) {
     filter.$or = [
@@ -158,6 +167,17 @@ export const updateMe = async (id, data) => {
 };
 
 export const updateRole = async (id, role) => {
+  const activeRecruitment = await isRecruitmentActive();
+  
+  if (!activeRecruitment) {
+    const restrictedRoles = ['koordinator_lapangan', 'pj_soal_materi', 'penanggung_jawab_ruangan', 'asisten_penilai'];
+    if (restrictedRoles.includes(role)) {
+      const err = new Error(`Role '${role}' tidak dapat ditetapkan saat tidak ada gelombang rekrutmen aktif`);
+      err.statusCode = 400;
+      throw err;
+    }
+  }
+
   const asisten = await Asisten.findByIdAndUpdate(id, { role }, { new: true, runValidators: true });
   if (!asisten) {
     const err = new Error('Asisten tidak ditemukan');

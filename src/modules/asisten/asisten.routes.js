@@ -3,7 +3,7 @@ import multer                        from 'multer';
 import { validate }                  from '../../middlewares/validate.middleware.js';
 import { asistenAuth }               from '../../middlewares/auth.middleware.js';
 import { requireRole }               from '../../middlewares/role.middleware.js';
-import { requireRecruitmentActive }  from '../../middlewares/requireRecruitmentActive.middleware.js';
+// requireRecruitmentActive is no longer needed here
 import * as schema                   from './asisten.schema.js';
 import * as ctrl                     from './asisten.controller.js';
 
@@ -44,8 +44,9 @@ router.post('/',                  requireRole('super_admin'), validate(schema.cr
 router.post('/import',            requireRole('super_admin'), uploadImport.single('file'),          ctrl.importFile);
 router.post('/:calasId/convert-calas', requireRole('super_admin'), validate(schema.convertCalasSchema), ctrl.convertFromCalas);
 
+router.get('/export',             requireRole('super_admin'),                                      ctrl.exportData);
 router.patch('/:id',              requireRole('super_admin'), validate(schema.updateSchema),        ctrl.update);
-router.patch('/:id/role',         requireRole('super_admin'), requireRecruitmentActive, validate(schema.updateRoleSchema), ctrl.updateRole);
+router.patch('/:id/role',         requireRole('super_admin'), validate(schema.updateRoleSchema), ctrl.updateRole);
 router.patch('/:id/toggle-active', requireRole('super_admin'),                                     ctrl.toggleActive);
 router.patch('/:id/reset-password', requireRole('super_admin'),                                    ctrl.resetPassword);
 

@@ -2,6 +2,7 @@ import asyncHandler from '../../utils/asyncHandler.js';
 import { sendSuccess } from '../../utils/apiResponse.js';
 import * as asistenService from './asisten.service.js';
 import * as asistenImport  from './asisten.import.js';
+import * as asistenExport  from './asisten.export.js';
 
 // ─── CRUD ─────────────────────────────────────────────────────────────────────
 
@@ -86,5 +87,14 @@ export const downloadTemplate = asyncHandler(async (req, res) => {
   const buffer = asistenImport.generateImportTemplate();
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="template-import-asisten.csv"');
+  res.send(buffer);
+});
+
+// ─── Export ───────────────────────────────────────────────────────────────────
+
+export const exportData = asyncHandler(async (req, res) => {
+  const buffer = await asistenExport.generateExportExcel();
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', 'attachment; filename="data_asisten.xlsx"');
   res.send(buffer);
 });

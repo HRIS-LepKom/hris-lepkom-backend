@@ -28,8 +28,13 @@ export const activate = asyncHandler(async (req, res) => {
 });
 
 export const deactivate = asyncHandler(async (req, res) => {
+  // Perpanjang timeout request dan response menjadi 5 menit (300000 ms) 
+  // untuk mengantisipasi lamanya proses reset role semua asisten
+  if (req.setTimeout) req.setTimeout(300000);
+  if (res.setTimeout) res.setTimeout(300000);
+
   const rec = await recruitmentService.deactivate(req.params.id, req.asisten._id);
-  sendSuccess(res, rec, 'Gelombang rekrutmen berhasil dinonaktifkan');
+  sendSuccess(res, rec, 'Gelombang rekrutmen berhasil dinonaktifkan dan role asisten telah direset');
 });
 
 export const hardDelete = asyncHandler(async (req, res) => {
