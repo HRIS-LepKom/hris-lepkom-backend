@@ -3,6 +3,11 @@ import Calas from '../../models/calas.model.js';
 import Recruitment from '../../models/recruitment.model.js';
 import Materi from '../../models/materi.model.js';
 import Soal from '../../models/soal.model.js';
+import QuestionCard from '../../models/questionCard.model.js';
+import RoomAssignment from '../../models/roomAssignment.model.js';
+import RoomPlacement from '../../models/roomPlacement.model.js';
+import Announcement from '../../models/announcement.model.js';
+import Penilaian from '../../models/penilaian.model.js';
 import { ASISTEN_ROLES } from '../../models/asisten.model.js';
 import { getDefaultPassword } from '../../utils/defaultPassword.js';
 import { getPaginationParams, buildPaginationMeta } from '../../utils/paginate.js';
@@ -30,26 +35,61 @@ const isRecruitmentActive = async () => {
   return !!activeRecruitment;
 };
 
-const getAsistenHistory = async (asistenId, role) => {
+const getAsistenHistory = async (asistenId) => {
   const history = {};
   
-  if (role === 'pj_soal_materi' || role === 'super_admin') {
-    history.historyUploadMateri = await Materi.find({ dibuatOleh: asistenId })
-      .select('namaMateri tingkat pertemuan createdAt')
-      .sort({ createdAt: -1 })
-      .lean();
-      
-    history.historyUploadSoal = await Soal.find({ dibuatOleh: asistenId })
-      .select('judulSoal jenisSoal createdAt')
-      .sort({ createdAt: -1 })
-      .lean();
-  }
+  history.historyUploadMateri = await Materi.find({ dibuatOleh: asistenId })
+    .select('namaMateri tingkat pertemuan createdAt')
+    .sort({ createdAt: -1 })
+    .lean();
+    
+  history.historyUploadSoal = await Soal.find({ dibuatOleh: asistenId })
+    .select('judulSoal jenisSoal createdAt')
+    .sort({ createdAt: -1 })
+    .lean();
 
-  if (role === 'asisten_penilai' || role === 'super_admin') {
-    history.historyPenilaian = [];
-  }
+  history.historyUploadQuestionCard = await QuestionCard.find({ dibuatOleh: asistenId })
+    .select('judul tingkat pertemuan createdAt')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  history.historyPjRuangan = await RoomAssignment.find({ pjRuanganRef: asistenId })
+    .select('ruangan createdAt examSessionRef')
+    .populate({ path: 'examSessionRef', select: 'sesi tanggal' })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  history.historyPenilaiRuangan = await RoomPlacement.find({ penilaiList: asistenId })
+    .select('ruangan createdAt examSessionRef')
+    .populate({ path: 'examSessionRef', select: 'sesi tanggal' })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  history.historyPengumuman = await Announcement.find({ dibuatOleh: asistenId })
+    .select('judul createdAt')
+    .sort({ createdAt: -1 })
+    .lean();
 
   return history;
+};
+
+export const getHistoryPenilaian = async (asistenId, query) => {
+  const { page, limit, skip } = getPaginationParams(query);
+  
+  const filter = { asistenPenilai: asistenId };
+
+  const [data, total] = await Promise.all([
+    Penilaian.find(filter)
+      .populate({ path: 'calasRef', select: 'namaCalas npm' })
+      .select('calasRef nilaiAkhir status createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Penilaian.countDocuments(filter),
+  ]);
+
+  return { data, meta: buildPaginationMeta(total, page, limit) };
 };
 
 // ─── Exports ─────────────────────────────────────────────────────────────────
@@ -69,18 +109,41 @@ export const getAll = async (query) => {
 
   const smartFilter = buildSmartFilter(query, {
     role: { type: 'string' },
+    kelasSaatIni: { type: 'string' }
   });
 
   const filter = { ...smartFilter };
 
-  if (query.tingkat) {
-    if (query.tingkat.toUpperCase() === 'NON CLASS') {
+  if (query.isActive !== undefined) {
+    let rawVal = query.isActive;
+    
+    // If it's a JSON string like '["true"]' or '["false"]', parse it
+    try {
+      if (typeof rawVal === 'string' && rawVal.startsWith('[')) {
+        rawVal = JSON.parse(rawVal);
+      }
+    } catch (e) {}
+
+    // Ensure it's an array for consistent processing
+    const values = Array.isArray(rawVal) ? rawVal : [rawVal];
+    const stringValues = values.map(v => String(v).toLowerCase());
+
+    const hasTrue = stringValues.includes('true');
+    const hasFalse = stringValues.includes('false');
+
+    if (hasTrue && !hasFalse) {
+      filter.isActive = { $ne: false };
+    } else if (hasFalse && !hasTrue) {
+      filter.isActive = false;
+    }
+  }
+
+  if (query.kelasSaatIni) {
+    if (query.kelasSaatIni.toUpperCase() === 'NON CLASS') {
       filter.kelasSaatIni = { $regex: '^NON CLASS$', $options: 'i' };
     } else {
-      filter.kelasSaatIni = { $regex: `^${query.tingkat}`, $options: 'i' };
+      filter.kelasSaatIni = { $regex: `^${query.kelasSaatIni}`, $options: 'i' };
     }
-  } else if (query.kelasSaatIni) {
-    filter.kelasSaatIni = query.kelasSaatIni;
   }
 
   if (query.search) {
@@ -98,13 +161,17 @@ export const getAll = async (query) => {
     sortOptions.nama = 1;
   }
 
-  let selectFields = 'idAsisten npm nama kelasSaatIni';
-  if (activeRecruitment) selectFields += ' role';
+  let selectFields = 'idAsisten npm nama kelasSaatIni role isActive';
 
   const [data, total] = await Promise.all([
     Asisten.find(filter).select(selectFields).sort(sortOptions).skip(skip).limit(limit).lean(),
     Asisten.countDocuments(filter),
   ]);
+
+  // Default isActive for legacy documents that don't have it
+  data.forEach(d => {
+    if (d.isActive === undefined) d.isActive = true;
+  });
 
   return { data, meta: buildPaginationMeta(total, page, limit) };
 };
@@ -117,20 +184,8 @@ export const getOne = async (id) => {
     throw err;
   }
 
-  const activeRecruitment = await isRecruitmentActive();
+  const history = await getAsistenHistory(asisten._id);
   
-  if (!activeRecruitment) {
-    return {
-      _id: asisten._id,
-      idAsisten: asisten.idAsisten,
-      npm: asisten.npm,
-      nama: asisten.nama,
-      kelasSaatIni: asisten.kelasSaatIni,
-      email: asisten.email
-    };
-  }
-
-  const history = await getAsistenHistory(asisten._id, asisten.role);
   return {
     ...sanitizeAsisten(asisten),
     history

@@ -21,6 +21,11 @@ export const getOne = asyncHandler(async (req, res) => {
   sendSuccess(res, asisten, 'Detail asisten berhasil diambil');
 });
 
+export const getHistoryPenilaian = asyncHandler(async (req, res) => {
+  const { data, meta } = await asistenService.getHistoryPenilaian(req.params.id, req.query);
+  sendSuccess(res, data, 'Riwayat penilaian asisten berhasil diambil', 200, meta);
+});
+
 export const getMe = asyncHandler(async (req, res) => {
   const asisten = await asistenService.getOne(req.asisten._id);
   sendSuccess(res, asisten, 'Detail profil Anda berhasil diambil');
@@ -80,7 +85,10 @@ export const importFile = asyncHandler(async (req, res) => {
     throw err;
   }
   const result = await asistenImport.importFromFile(req.file);
-  sendSuccess(res, result, `Import selesai: ${result.berhasil} berhasil, ${result.gagal.length} gagal`, 207);
+  const msg = result.gagal.length > 0
+    ? `Import selesai: ${result.berhasil} data dimasukkan, ${result.gagal.length} data dilewati karena duplikat/tidak valid.`
+    : `Import berhasil: ${result.berhasil} data dimasukkan.`;
+  sendSuccess(res, result, msg, 207);
 });
 
 export const downloadTemplate = asyncHandler(async (req, res) => {

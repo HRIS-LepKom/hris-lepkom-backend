@@ -149,9 +149,9 @@ export const deactivate = async (id, asistenId) => {
   rec.dinonaktifkanPada = new Date();
   await rec.save();
 
-  // Ambil semua asisten yang rolenya BUKAN 'super_admin' dan BUKAN 'asisten'
+  // Ambil semua asisten yang rolenya BUKAN 'super_admin', 'staff', dan 'asisten'
   const assistantsToReset = await Asisten.find({
-    role: { $nin: ['super_admin', 'asisten'] }
+    role: { $nin: ['super_admin', 'staff', 'asisten'] }
   });
 
   // Iterasi satu per satu sesuai instruksi

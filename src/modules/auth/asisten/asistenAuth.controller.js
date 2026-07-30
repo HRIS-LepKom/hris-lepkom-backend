@@ -61,6 +61,6 @@ export const changePassword = asyncHandler(async (req, res) => {
 });
 
 export const getHardResetRequests = asyncHandler(async (req, res) => {
-  const result = await asistenAuthService.getAllHardResetRequests(req.query);
-  sendSuccess(res, result, 'Berhasil mendapatkan daftar request reset password');
+  const { data, meta } = await asistenAuthService.getAllHardResetRequests(req.query);
+  sendSuccess(res, data, 'Berhasil mendapatkan daftar request reset password', 200, meta);
 });

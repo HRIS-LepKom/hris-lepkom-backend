@@ -5,7 +5,7 @@ import { sanitizeAsisten }    from './asisten.service.js';
 
 
 // Kolom wajib yang harus ada di file import
-const REQUIRED_COLS = ['idAsisten', 'npm', 'nama'];
+const REQUIRED_COLS = ['idAsisten', 'npm', 'nama', 'kelasSaatIni'];
 
 // Header template kosong untuk download
 const TEMPLATE_HEADERS = ['idAsisten', 'npm', 'nama', 'email', 'kelasSaatIni'];
@@ -21,18 +21,36 @@ const parseBuffer = (buffer, mimetype) => {
 };
 
 const parseRow = (row, index) => {
-  const missing = REQUIRED_COLS.filter((col) => !String(row[col] ?? '').trim());
-  if (missing.length) {
+  const normRow = {};
+  for (const k in row) {
+    const key = k.trim().toLowerCase().replace(/\s+/g, '');
+    normRow[key] = row[k];
+  }
+
+  const idAsisten = normRow.idasisten || normRow.id;
+  const npm = normRow.npm;
+  const nama = normRow.nama || normRow.namaasisten;
+  const email = normRow.email;
+  const kelasSaatIni = normRow.kelassaatini || normRow.kelas;
+
+  const missing = [];
+  if (!idAsisten) missing.push('idAsisten');
+  if (!npm) missing.push('npm');
+  if (!nama) missing.push('nama');
+  if (!kelasSaatIni) missing.push('kelasSaatIni');
+
+  if (missing.length > 0) {
     return { ok: false, reason: `Baris ${index + 2}: kolom wajib kosong — ${missing.join(', ')}` };
   }
+
   return {
     ok:   true,
     data: {
-      idAsisten:    String(row.idAsisten).trim(),
-      npm:          String(row.npm).trim(),
-      nama:         String(row.nama).trim(),
-      email:        row.email    ? String(row.email).trim().toLowerCase()    : undefined,
-      kelasSaatIni: row.kelasSaatIni ? String(row.kelasSaatIni).trim() : undefined,
+      idAsisten:    String(idAsisten).trim(),
+      npm:          String(npm).trim(),
+      nama:         String(nama).trim(),
+      email:        email ? String(email).trim().toLowerCase() : undefined,
+      kelasSaatIni: String(kelasSaatIni).trim(),
     },
   };
 };
@@ -53,6 +71,16 @@ export const importFromFile = async (file) => {
     const parsed = parseRow(row, i);
     if (!parsed.ok) { gagal.push({ baris: i + 2, alasan: parsed.reason }); continue; }
 
+    // 1. Pengecekan duplikat terlebih dahulu sesuai aturan yang diinginkan
+    const exist = await Asisten.exists({
+      $or: [{ idAsisten: parsed.data.idAsisten }, { npm: parsed.data.npm }]
+    });
+
+    if (exist) {
+      gagal.push({ baris: i + 2, alasan: 'Dilewati: idAsisten atau npm sudah terdaftar di database' });
+      continue;
+    }
+
     try {
       const asisten = await Asisten.create({
         ...parsed.data,
@@ -61,9 +89,11 @@ export const importFromFile = async (file) => {
       });
       berhasil.push(sanitizeAsisten(asisten));
     } catch (e) {
-      const alasan = e.code === 11000
-        ? `Duplikat — idAsisten atau npm sudah terdaftar`
-        : e.message;
+      let alasan = e.message;
+      if (e.code === 11000) {
+        const dupField = Object.keys(e.keyPattern || {})[0] || 'data';
+        alasan = `Duplikat — ${dupField} sudah terdaftar`;
+      }
       gagal.push({ baris: i + 2, alasan });
     }
   }

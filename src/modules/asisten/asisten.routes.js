@@ -34,7 +34,9 @@ router.get('/',                   ctrl.getAll);
 router.get('/filters',            ctrl.getFilters);
 router.get('/me',                 ctrl.getMe);
 router.get('/template-import',    ctrl.downloadTemplate);
+router.get('/export',             requireRole('super_admin'),                                      ctrl.exportData);
 router.get('/:id',                ctrl.getOne);
+router.get('/:id/penilaian',      ctrl.getHistoryPenilaian);
 
 // ─── Self Update (Asisten diri sendiri) ───────────────────────────────────────
 router.patch('/me',               validate(schema.updateMeSchema), ctrl.updateMe);
@@ -44,7 +46,6 @@ router.post('/',                  requireRole('super_admin'), validate(schema.cr
 router.post('/import',            requireRole('super_admin'), uploadImport.single('file'),          ctrl.importFile);
 router.post('/:calasId/convert-calas', requireRole('super_admin'), validate(schema.convertCalasSchema), ctrl.convertFromCalas);
 
-router.get('/export',             requireRole('super_admin'),                                      ctrl.exportData);
 router.patch('/:id',              requireRole('super_admin'), validate(schema.updateSchema),        ctrl.update);
 router.patch('/:id/role',         requireRole('super_admin'), validate(schema.updateRoleSchema), ctrl.updateRole);
 router.patch('/:id/toggle-active', requireRole('super_admin'),                                     ctrl.toggleActive);

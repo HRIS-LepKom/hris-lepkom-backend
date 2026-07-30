@@ -34,7 +34,7 @@ const calasSchema = new Schema(
     jenisKelamin: {
       type: String,
       required: true,
-      enum: ["Laki-laki", "Perempuan"],
+      enum: ["L", "P"],
     },
     noKtp: {
       type: String,
@@ -55,14 +55,10 @@ const calasSchema = new Schema(
       trim: true,
       lowercase: true,
     },
-    tempatLahir: {
+    tempatLahirTanggalLahir: {
       type: String,
       required: true,
       trim: true,
-    },
-    tanggalLahir: {
-      type: Date,
-      required: true,
     },
     alamatLengkap: {
       type: String,
@@ -113,9 +109,14 @@ const calasSchema = new Schema(
       semester7: { type: String, default: null },
     },
 
-    semesterKursusDel: {
+    isKursusDelete: {
       type: Boolean,
       default: false,
+    },
+
+    SemesterKursusDel: {
+      type: String,
+      trim: true,
     },
 
     kemampuanPribadi: {
@@ -141,12 +142,6 @@ const calasSchema = new Schema(
       select: false, 
     },
 
-    daftarVia: {
-      type: String,
-      enum: ["mandiri", "asisten"],
-      required: true,
-      default: "mandiri",
-    },
     didaftarkanOleh: {
       type: Schema.Types.ObjectId,
       ref: "Asisten",
