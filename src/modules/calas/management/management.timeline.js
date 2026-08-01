@@ -9,12 +9,7 @@ import { ujianPraktekTemplate } from '../../../templates/timeline/ujianPraktek.t
 import { ujianProjectTemplate } from '../../../templates/timeline/ujianProject.template.js';
 import { keputusanAkhirTemplate } from '../../../templates/timeline/keputusanAkhir.template.js';
 import { lolosTemplate } from '../../../templates/timeline/lolos.template.js';
-import { tidakLolosTemplate } from '../../../templates/timeline/tidakLolos.template.js';
-import { tidakLolosScreeningTemplate } from '../../../templates/timeline/tidakLolosScreening.template.js';
-import { tidakLolosBiodataTemplate } from '../../../templates/timeline/tidakLolosBiodata.template.js';
-import { tidakLolosUjianPraktekTemplate } from '../../../templates/timeline/tidakLolosUjianPraktek.template.js';
-import { tidakLolosUjianProjectTemplate } from '../../../templates/timeline/tidakLolosUjianProject.template.js';
-import { tidakLolosKeputusanAkhirTemplate } from '../../../templates/timeline/tidakLolosKeputusanAkhir.template.js';
+import { penolakanTemplate } from '../../../templates/timeline/penolakan.template.js';
 
 const STAGES = [
   'registrasi',
@@ -26,7 +21,7 @@ const STAGES = [
   'selesai'
 ];
 
-export const updateTimeline = async (calasId, { tahapSaatIni, hasil, alasanTidakLolos }) => {
+export const updateTimeline = async (calasId, { tahapSaatIni, hasil, alasanTidakLolos, deskripsiPenolakan }) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -38,6 +33,19 @@ export const updateTimeline = async (calasId, { tahapSaatIni, hasil, alasanTidak
       throw err;
     }
 
+    if (calas.isBanned) {
+      const err = new Error('Calas sedang diblokir, tidak dapat mengubah progres rekrutmen');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Tidak bisa update jika sudah di tahap keputusan_akhir (gunakan accept/reject)
+    if (calas.statusRekrutmen.tahapSaatIni === 'keputusan_akhir' && hasil !== 'tidak_lolos') {
+      const err = new Error('Calas sudah di tahap keputusan akhir. Gunakan fitur Terima/Tolak.');
+      err.statusCode = 400;
+      throw err;
+    }
+
     const currentIndex = STAGES.indexOf(calas.statusRekrutmen.tahapSaatIni);
     const newIndex = STAGES.indexOf(tahapSaatIni);
 
@@ -46,7 +54,7 @@ export const updateTimeline = async (calasId, { tahapSaatIni, hasil, alasanTidak
       err.statusCode = 400;
       throw err;
     }
-    if (newIndex > currentIndex + 1) {
+    if (newIndex > currentIndex + 1 && hasil !== 'tidak_lolos') {
       const err = new Error('Tahapan rekrutmen harus berurutan (step-by-step), tidak bisa diloncat.');
       err.statusCode = 400;
       throw err;
@@ -72,9 +80,18 @@ export const updateTimeline = async (calasId, { tahapSaatIni, hasil, alasanTidak
       throw err;
     }
 
-    calas.statusRekrutmen.tahapSaatIni = tahapSaatIni;
+    // Jika tertolak, paksakan tahapSaatIni menjadi 'selesai'
+    if (hasil === 'tidak_lolos') {
+      calas.statusRekrutmen.tahapSaatIni = 'selesai';
+    } else {
+      calas.statusRekrutmen.tahapSaatIni = tahapSaatIni;
+    }
+
     calas.statusRekrutmen.hasil = hasil;
     calas.statusRekrutmen.alasanTidakLolos = alasanTidakLolos || null;
+    calas.statusRekrutmen.deskripsiPenolakan = (alasanTidakLolos === 'lainnya' && deskripsiPenolakan)
+      ? deskripsiPenolakan
+      : null;
 
     await calas.save({ session });
     await session.commitTransaction();
@@ -84,14 +101,11 @@ export const updateTimeline = async (calasId, { tahapSaatIni, hasil, alasanTidak
   const context = { namaCalas: calas.namaCalas };
 
   if (hasil === 'tidak_lolos') {
-    switch (tahapSaatIni) {
-      case 'screening':       emailData = tidakLolosScreeningTemplate(context); break;
-      case 'biodata_dokumen': emailData = tidakLolosBiodataTemplate(context); break;
-      case 'ujian_praktek':   emailData = tidakLolosUjianPraktekTemplate(context); break;
-      case 'ujian_project':   emailData = tidakLolosUjianProjectTemplate(context); break;
-      case 'keputusan_akhir': emailData = tidakLolosKeputusanAkhirTemplate(context); break;
-      default:                emailData = tidakLolosTemplate(context); break;
-    }
+    emailData = penolakanTemplate({
+      namaCalas: calas.namaCalas,
+      alasanTidakLolos,
+      deskripsiPenolakan
+    });
   } else if (hasil === 'lolos' && tahapSaatIni === 'selesai') {
     emailData = lolosTemplate(context);
   } else {
@@ -137,7 +151,10 @@ export const resetProses = async (calasId) => {
   calas.krs = null;
   calas.rangkumanNilai = null;
 
-  calas.statusRekrutmen = { tahapSaatIni: 'registrasi', hasil: 'proses', alasanTidakLolos: null };
+  calas.statusRekrutmen = {
+    tahapSaatIni: 'registrasi', hasil: 'proses',
+    alasanTidakLolos: null, deskripsiPenolakan: null,
+  };
 
   await calas.save();
   return sanitizeCalas(calas);

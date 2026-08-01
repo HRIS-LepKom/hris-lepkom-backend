@@ -4,6 +4,7 @@ import * as managementService  from './management.service.js';
 import * as managementImport   from './management.import.js';
 import * as managementExport   from './management.export.js';
 import * as managementTimeline from './management.timeline.js';
+import * as managementAction   from './management.action.js';
 
 // ─── Self (Calas Login) ───────────────────────────────────────────────────────
 
@@ -71,6 +72,29 @@ export const updateTimeline = asyncHandler(async (req, res) => {
 export const resetProses = asyncHandler(async (req, res) => {
   const calas = await managementTimeline.resetProses(req.params.id);
   sendSuccess(res, calas, 'Proses rekrutmen calas berhasil direset ke tahap awal');
+});
+
+// ─── Actions ──────────────────────────────────────────────────────────────────
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  const calas = await managementAction.resetPassword(req.params.id);
+  sendSuccess(res, calas, 'Password calas berhasil direset ke default');
+});
+
+export const sendBiodataEmail = asyncHandler(async (req, res) => {
+  const calas = await managementAction.sendBiodataEmail(req.params.id);
+  sendSuccess(res, calas, 'Email registrasi berhasil dikirim ke calas');
+});
+
+export const acceptCalas = asyncHandler(async (req, res) => {
+  const calas = await managementAction.acceptCalas(req.params.id);
+  sendSuccess(res, calas, 'Calas berhasil diterima sebagai asisten, email telah dikirim');
+});
+
+export const rejectCalas = asyncHandler(async (req, res) => {
+  const { alasanTidakLolos, deskripsiPenolakan } = req.body;
+  const calas = await managementAction.rejectCalas(req.params.id, alasanTidakLolos, deskripsiPenolakan);
+  sendSuccess(res, calas, 'Calas berhasil ditolak, email penolakan telah dikirim');
 });
 
 // ─── Import ───────────────────────────────────────────────────────────────────

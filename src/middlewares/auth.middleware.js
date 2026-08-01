@@ -73,3 +73,44 @@ export const calasAuth = createAuthMiddleware({
     }),
   },
 });
+
+export const calasOrPjAuth = asyncHandler(async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return sendError(res, 'Token tidak ditemukan', 401);
+  }
+
+  const token = authHeader.split(' ')[1];
+  const { valid, decoded, errorName } = verifyToken(token);
+
+  if (!valid) {
+    const message = errorName === 'TokenExpiredError'
+      ? 'Access token sudah expired, silakan refresh token'
+      : 'Token tidak valid atau telah dirusak';
+    return sendError(res, message, 401);
+  }
+
+  // 1. Cek apakah user adalah Asisten
+  const asisten = await Asisten.findById(decoded.id).select('-password');
+  if (asisten) {
+    if (!asisten.isActive) return sendError(res, 'Akun asisten tidak aktif', 403);
+    if (!['super_admin', 'pj_soal_materi'].includes(asisten.role)) {
+       return sendError(res, 'Akses ditolak. Fitur preview soal-calas hanya untuk super_admin & pj_soal_materi', 403);
+    }
+    req.asisten = asisten;
+    req.userType = 'asisten';
+    return next();
+  }
+
+  // 2. Cek apakah user adalah Calas
+  const calas = await Calas.findById(decoded.id).select('-password');
+  if (calas) {
+    if (calas.isBanned) return sendError(res, 'Akun Calas Anda telah diblokir', 403);
+    req.calas = calas;
+    req.userType = 'calas';
+    return next();
+  }
+
+  return sendError(res, 'Akun tidak ditemukan', 401);
+});

@@ -54,5 +54,11 @@ router.delete('/:id', requireRole('super_admin'), validate(schema.deleteSchema),
 // Rekrutmen Aktif Only — super_admin
 router.patch('/:id/timeline',     requireRole('super_admin'), requireRecruitmentActive, validate(schema.updateTimelineSchema), ctrl.updateTimeline);
 router.patch('/:id/reset-proses', requireRole('super_admin'), requireRecruitmentActive,                                        ctrl.resetProses);
+router.patch('/:id/accept',       requireRole('super_admin'), requireRecruitmentActive,                                        ctrl.acceptCalas);
+router.patch('/:id/reject',       requireRole('super_admin'), requireRecruitmentActive, validate(schema.rejectSchema),         ctrl.rejectCalas);
+
+// Actions — super_admin
+router.patch('/:id/reset-password',    requireRole('super_admin'), ctrl.resetPassword);
+router.post('/:id/send-biodata-email', requireRole('super_admin'), ctrl.sendBiodataEmail);
 
 export default router;

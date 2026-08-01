@@ -10,31 +10,40 @@ import { deleteFromSupabase } from '../../../utils/uploadHelper.js';
 import { buildSmartFilter } from '../../../utils/buildSmartFilter.js';
 
 export const sanitizeCalas = (calas) => ({
-  _id:                calas._id,
-  idCalas:            calas.idCalas,
-  npm:                calas.npm,
-  namaCalas:          calas.namaCalas,
-  emailCalas:         calas.emailCalas,
-  kelas:              calas.kelas,
-  jurusan:            calas.jurusan,
-  isKursusDelete:     calas.isKursusDelete,
-  SemesterKursusDel:  calas.SemesterKursusDel,
-  gelombangDaftar:    calas.gelombangDaftar,
-  statusRekrutmen:    calas.statusRekrutmen,
-  isBanned:           calas.isBanned,
-  didaftarkanOleh:    calas.didaftarkanOleh,
-  skorAkhirNilai:     calas.skorAkhirNilai || null,
-  createdAt:          calas.createdAt,
-  updatedAt:          calas.updatedAt,
+  _id:                    calas._id,
+  idCalas:                calas.idCalas,
+  npm:                    calas.npm,
+  namaCalas:              calas.namaCalas,
+  emailCalas:             calas.emailCalas,
+  kelas:                  calas.kelas,
+  jurusan:                calas.jurusan,
+  isKursusDelete:         calas.isKursusDelete,
+  SemesterKursusDel:      calas.SemesterKursusDel,
+  gelombangDaftar:        calas.gelombangDaftar,
+  statusRekrutmen:        calas.statusRekrutmen,
+  isBanned:               calas.isBanned,
+  isBiodataEmailSending:  calas.isBiodataEmailSending,
+  daftarVia:              calas.daftarVia,
+  didaftarkanOleh:        calas.didaftarkanOleh,
+  skorAkhirNilai:         calas.skorAkhirNilai || null,
+  createdAt:              calas.createdAt,
+  updatedAt:              calas.updatedAt,
 });
 
 export const create = async (data, asistenId, gelombangAktif) => {
   const calas = await Calas.create({
     ...data,
-    password:           getDefaultPassword(),
-    wajibGantiPassword: true,
-    didaftarkanOleh:    asistenId,
-    gelombangDaftar:    data.gelombangDaftar || gelombangAktif || null,
+    password:              getDefaultPassword(),
+    wajibGantiPassword:    true,
+    isBiodataEmailSending: true,
+    daftarVia:             'asisten',
+    didaftarkanOleh:       asistenId,
+    gelombangDaftar:       data.gelombangDaftar || gelombangAktif || null,
+    statusRekrutmen: {
+      tahapSaatIni:    'biodata_dokumen',
+      hasil:           'proses',
+      alasanTidakLolos: null,
+    },
   });
   return sanitizeCalas(calas);
 };
@@ -110,7 +119,7 @@ export const getAll = async (query) => {
 };
 
 export const getOne = async (id) => {
-  const calas = await Calas.findById(id).populate('didaftarkanOleh', 'nama idAsisten').lean();
+  const calas = await Calas.findById(id).lean();
   if (!calas) {
     const err = new Error('Calas tidak ditemukan');
     err.statusCode = 404;
@@ -121,16 +130,63 @@ export const getOne = async (id) => {
   const riwayatPenilaian = await Penilaian.find({ calasRef: calas._id })
     .populate('penilaiRef', 'nama idAsisten role')
     .populate('examSessionRef', 'tanggal jenisUjian')
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
 
-  const result = calas.toObject();
-  delete result.password;
-  delete result.refreshToken;
-  delete result.resetPasswordToken;
+  // Populate RoomPlacement
+  const penempatanRuangan = await RoomPlacement.find({ calasList: calas._id })
+    .populate('examSessionRef', 'tanggal jamMulai jamSelesai jenisUjian')
+    .lean();
 
-  result.riwayatPenilaian = riwayatPenilaian;
+  const ringkasanPenilaian = {
+    praktek: { rataRataKeseluruhan: 0, rataRataKriteria: {}, detailPenilai: [] },
+    project: { rataRataKeseluruhan: 0, rataRataKriteria: {}, detailPenilai: [] }
+  };
 
-  return result;
+  ['praktek', 'project'].forEach((jenis) => {
+    const filterRiwayat = riwayatPenilaian.filter(p => p.jenisUjian === jenis);
+    if (filterRiwayat.length > 0) {
+      const kriteriaSums = {};
+      let totalSkor = 0;
+
+      filterRiwayat.forEach(p => {
+        totalSkor += p.skorKeseluruhan;
+        
+        Object.keys(p.kriteria).forEach(k => {
+          if (!kriteriaSums[k]) kriteriaSums[k] = 0;
+          kriteriaSums[k] += p.kriteria[k];
+        });
+
+        ringkasanPenilaian[jenis].detailPenilai.push({
+          penilai: p.penilaiRef,
+          kriteria: p.kriteria,
+          skorKeseluruhan: p.skorKeseluruhan,
+          deskripsi: p.deskripsi
+        });
+      });
+
+      ringkasanPenilaian[jenis].rataRataKeseluruhan = totalSkor / filterRiwayat.length;
+      Object.keys(kriteriaSums).forEach(k => {
+        ringkasanPenilaian[jenis].rataRataKriteria[k] = kriteriaSums[k] / filterRiwayat.length;
+      });
+    }
+  });
+
+  // Remove sensitive fields requested by user
+  const sensitiveFields = [
+    'isBanned', 'refreshToken', 'password', 'daftarVia', 
+    'wajibGantiPassword', 'didaftarkanOleh', 'isBiodataEmailSending', 
+    'resetPasswordToken', 'resetPasswordExpiry'
+  ];
+  sensitiveFields.forEach(field => delete calas[field]);
+
+  calas.penempatanRuangan = penempatanRuangan.map(p => ({
+    ruangan: p.ruangan,
+    examSession: p.examSessionRef
+  }));
+  calas.ringkasanPenilaian = ringkasanPenilaian;
+
+  return calas;
 };
 
 export const getFilters = async () => {

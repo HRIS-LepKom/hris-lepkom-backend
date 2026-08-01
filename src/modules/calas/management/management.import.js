@@ -35,7 +35,33 @@ const normalizeJenisKelamin = (raw) => {
   return null;
 };
 
-const parseRow = (row, index) => {
+const parseRow = (rawRow, index) => {
+  // Normalize row keys to handle variations in Excel headers
+  const row = { ...rawRow };
+  
+  // Handle 'Tempat, Tanggal Lahir' if it exists
+  if (row['Tempat, Tanggal Lahir'] && !row['tempatLahir'] && !row['tanggalLahir']) {
+    const ttl = String(row['Tempat, Tanggal Lahir']);
+    if (ttl.includes(',')) {
+      const parts = ttl.split(',');
+      row.tempatLahir = parts[0].trim();
+      row.tanggalLahir = parts.slice(1).join(',').trim();
+    } else {
+      row.tempatLahir = ttl.trim();
+      row.tanggalLahir = '';
+    }
+  }
+
+  // Handle 'Pengalaman Kerja' if it exists
+  if (row['Pengalaman Kerja'] && !row['pengalamanKerja']) {
+    row.pengalamanKerja = row['Pengalaman Kerja'];
+  }
+  
+  // Handle 'jenisKelamin (L/P)' vs 'jenisKelamin'
+  if (row['jenisKelamin (L/P)'] && !row['jenisKelamin']) {
+    row.jenisKelamin = row['jenisKelamin (L/P)'];
+  }
+
   const missing = REQUIRED_COLS.filter((col) => !String(row[col] ?? '').trim());
   if (missing.length) {
     return { ok: false, reason: `Baris ${index + 2}: kolom wajib kosong — ${missing.join(', ')}` };
@@ -51,11 +77,6 @@ const parseRow = (row, index) => {
     return { ok: false, reason: `Baris ${index + 2}: ipk tidak valid (harus angka 0-4).` };
   }
 
-  // Gabungkan tempatLahir + tanggalLahir sesuai model calas.model.js (field tunggal string)
-  const tempatLahirTanggalLahir = `${String(row.tempatLahir).trim()}, ${String(row.tanggalLahir).trim()}`;
-
-  // SemesterKursusDel: jika ada isinya di excel -> isKursusDelete true, simpan nilainya
-  // jika kosong -> isKursusDelete false, SemesterKursusDel dikosongkan
   const semesterKursusDelRaw = String(row.SemesterKursusDel ?? '').trim();
   const isKursusDelete = semesterKursusDelRaw.length > 0;
 
@@ -70,7 +91,8 @@ const parseRow = (row, index) => {
       noKtp:            String(row.noKtp).trim(),
       noHp:             String(row.noHp).trim(),
       emailCalas:       String(row.emailCalas).trim().toLowerCase(),
-      tempatLahirTanggalLahir,
+      tempatLahir:      String(row.tempatLahir).trim(),
+      tanggalLahir:     String(row.tanggalLahir).trim(),
       alamatLengkap:    String(row.alamatLengkap).trim(),
       asalSekolah:      String(row.asalSekolah).trim(),
       wilayah:          row.wilayah ? String(row.wilayah).trim() : undefined,
@@ -117,10 +139,12 @@ export const importFromFile = async (file, asistenId, gelombangAktif) => {
     try {
       const calas = await Calas.create({
         ...parsed.data,
-        password:           getDefaultPassword(),
-        wajibGantiPassword: true,
-        didaftarkanOleh:    asistenId,
-        gelombangDaftar:    gelombangAktif || null,
+        password:              getDefaultPassword(),
+        wajibGantiPassword:    true,
+        isBiodataEmailSending: true,
+        daftarVia:             'asisten',
+        didaftarkanOleh:       asistenId,
+        gelombangDaftar:       gelombangAktif || null,
         statusRekrutmen: {
           tahapSaatIni: 'biodata_dokumen',
           hasil: 'proses',

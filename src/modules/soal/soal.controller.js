@@ -68,5 +68,5 @@ export const deleteTempFile = asyncHandler(async (req, res) => {
 
 export const downloadFile = asyncHandler(async (req, res) => {
   const { signedUrl } = await soalFileService.downloadFile(req.params.id, req.asisten?.role);
-  res.redirect(signedUrl);
+  sendSuccess(res, { url: signedUrl }, 'URL download berhasil didapatkan');
 });

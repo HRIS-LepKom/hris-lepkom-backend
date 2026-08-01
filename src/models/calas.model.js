@@ -55,7 +55,12 @@ const calasSchema = new Schema(
       trim: true,
       lowercase: true,
     },
-    tempatLahirTanggalLahir: {
+    tempatLahir: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    tanggalLahir: {
       type: String,
       required: true,
       trim: true,
@@ -142,6 +147,12 @@ const calasSchema = new Schema(
       select: false, 
     },
 
+    daftarVia: {
+      type: String,
+      enum: ["mandiri", "asisten"],
+      required: true,
+      default: "mandiri",
+    },
     didaftarkanOleh: {
       type: Schema.Types.ObjectId,
       ref: "Asisten",
@@ -150,6 +161,10 @@ const calasSchema = new Schema(
     wajibGantiPassword: {
       type: Boolean,
       default: false,
+    },
+    isBiodataEmailSending: {
+      type: Boolean,
+      default: true,
     },
 
     cv: {
@@ -201,6 +216,11 @@ const calasSchema = new Schema(
           "ditolak_rapat_akhir",
           "lainnya",
         ],
+        default: null,
+      },
+      deskripsiPenolakan: {
+        type: String,
+        trim: true,
         default: null,
       },
     },

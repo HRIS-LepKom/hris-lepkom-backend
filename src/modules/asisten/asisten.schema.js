@@ -35,7 +35,7 @@ export const updateMeSchema = {
   properties: {
     npm:          { type: 'string', minLength: 1, maxLength: 20 },
     nama:         { type: 'string', minLength: 2, maxLength: 100 },
-    email:        { type: 'string', format: 'email' },
+    email:        { type: 'string', pattern: "^\\S+@\\S+\\.\\S+$" },
     kelasSaatIni: { type: 'string', maxLength: 20 },
   },
 };

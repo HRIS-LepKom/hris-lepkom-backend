@@ -6,7 +6,7 @@ export const updateBiodataSchema = {
     npm:                  { type: 'string' },
     namaCalas:            { type: 'string' },
     noKtp:                { type: 'string' },
-    jenisKelamin:         { type: 'string', enum: ['Laki-laki', 'Perempuan'] },
+    jenisKelamin:         { type: 'string', enum: ['L', 'P'] },
     kelas:                { type: 'string' },
     tanggalLahir:         { type: 'string' },
     tempatLahir:          { type: 'string' },
