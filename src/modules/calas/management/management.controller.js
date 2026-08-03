@@ -5,15 +5,18 @@ import * as managementImport   from './management.import.js';
 import * as managementExport   from './management.export.js';
 import * as managementTimeline from './management.timeline.js';
 import * as managementAction   from './management.action.js';
+import * as biodataService     from '../biodata/biodata.service.js';
 
 // ─── Self (Calas Login) ───────────────────────────────────────────────────────
 
 export const getMe = asyncHandler(async (req, res) => {
   const calas = await managementService.getOne(req.calas._id);
 
-  const allowedStages = ['keputusan_akhir', 'selesai'];
-  if (!allowedStages.includes(calas.statusRekrutmen?.tahapSaatIni)) {
-    delete calas.riwayatPenilaian;
+  const isSelesai = calas.statusRekrutmen?.tahapSaatIni === 'selesai';
+  const isLolosOrTidak = ['lolos', 'tidak_lolos'].includes(calas.statusRekrutmen?.hasil);
+
+  if (!(isSelesai && isLolosOrTidak)) {
+    delete calas.ringkasanPenilaian;
   }
 
   sendSuccess(res, calas, 'Data profil berhasil diambil');
@@ -40,6 +43,16 @@ export const getFilters = asyncHandler(async (req, res) => {
 export const getOne = asyncHandler(async (req, res) => {
   const calas = await managementService.getOne(req.params.id);
   sendSuccess(res, calas, 'Detail calas berhasil diambil');
+});
+
+export const downloadDokumenCalas = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  let { jenisDokumen } = req.params;
+  
+  if (jenisDokumen === 'rangkuman-nilai') jenisDokumen = 'rangkumanNilai';
+  
+  const { signedUrl } = await biodataService.downloadDokumen(id, jenisDokumen);
+  sendSuccess(res, { signedUrl }, 'Link unduhan berhasil dibuat');
 });
 
 export const update = asyncHandler(async (req, res) => {

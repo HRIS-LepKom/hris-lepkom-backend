@@ -98,7 +98,7 @@ export const updateTimeline = async (calasId, { tahapSaatIni, hasil, alasanTidak
     session.endSession();
 
   let emailData = null;
-  const context = { namaCalas: calas.namaCalas };
+  const context = { namaCalas: calas.namaCalas, clientUrl: process.env.CLIENT_URL };
 
   if (hasil === 'tidak_lolos') {
     emailData = penolakanTemplate({

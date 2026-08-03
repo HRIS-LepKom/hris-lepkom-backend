@@ -1,4 +1,4 @@
-export const lolosTemplate = ({ namaCalas }) => {
+export const lolosTemplate = ({ namaCalas, clientUrl }) => {
   const subject = "SELAMAT! Kamu Resmi Menjadi Asisten LEPKOM 🎉🎉🎉";
   const html = `
 <!DOCTYPE html>
@@ -37,7 +37,7 @@ export const lolosTemplate = ({ namaCalas }) => {
         <p style="margin: 5px 0 0 0; color: #333; font-size: 14px;">Silakan login ke dashboard kamu untuk melihat detail terkait jadwal briefing perdana, kelengkapan administrasi akhir, dan proses onboarding asisten baru.</p>
       </div>
 
-      <a href="#" class="btn">Menuju Dashboard</a>
+      <a href="${clientUrl}" class="btn">Menuju Dashboard</a>
       
       <p style="margin-top: 40px; font-weight: 700; color: #23376c; font-size: 18px;">Sekali lagi, Selamat!</p>
     </div>
@@ -49,7 +49,7 @@ export const lolosTemplate = ({ namaCalas }) => {
 </html>
   `;
   
-  const text = `SELAMAT ${namaCalas}!\n\nKamu dinyatakan LOLOS dan diterima sebagai Asisten Laboratorium Teknik Informatika (LEPKOM). Selamat bergabung di keluarga besar kami!\n\nSilakan login ke dashboard untuk info briefing perdana.\n\nPanitia Rekrutmen Asisten LEPKOM`;
+  const text = `SELAMAT ${namaCalas}!\n\nKamu dinyatakan LOLOS dan diterima sebagai Asisten Laboratorium Teknik Informatika (LEPKOM). Selamat bergabung di keluarga besar kami!\n\nSilakan login ke dashboard melalui tautan berikut untuk info briefing perdana: ${clientUrl}\n\nPanitia Rekrutmen Asisten LEPKOM`;
   
   return { subject, html, text };
 };

@@ -5,7 +5,8 @@ export const updateBiodataSchema = {
   properties: {
     npm:                  { type: 'string' },
     namaCalas:            { type: 'string' },
-    noKtp:                { type: 'string' },
+    noKtp:                { type: 'string', minLength: 16, maxLength: 16, pattern: '^[0-9]{16}$' },
+    emailCalas:           { type: 'string' },
     jenisKelamin:         { type: 'string', enum: ['L', 'P'] },
     kelas:                { type: 'string' },
     tanggalLahir:         { type: 'string' },
@@ -22,6 +23,9 @@ export const updateBiodataSchema = {
     pengalamanKerja:      { type: 'string' },
     asalSekolah:          { type: 'string' },
     jurusan:              { type: 'string' },
+    ipk:                  { type: 'number', minimum: 0, maximum: 4 },
+    isKursusDelete:       { type: 'boolean' },
+    SemesterKursusDel:    { type: 'string' },
     kursusSemester: {
       type: 'object',
       properties: {
@@ -34,6 +38,9 @@ export const updateBiodataSchema = {
         semester7: { type: 'string', nullable: true },
       },
       additionalProperties: false
-    }
+    },
+    cv:                   { type: 'string', nullable: true },
+    krs:                  { type: 'string', nullable: true },
+    rangkumanNilai:       { type: 'string', nullable: true }
   }
 };

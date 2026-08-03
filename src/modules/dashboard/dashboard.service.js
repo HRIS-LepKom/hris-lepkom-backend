@@ -131,9 +131,11 @@ export const getPenilaiStats = async (asistenId) => {
       } else {
         waitingList.push({
           calasId: calas.idCalas,
+          calasRef: calas._id,
           namaCalas: calas.namaCalas,
           jenisUjian,
-          ruangan: room.ruangan
+          ruangan: room.ruangan,
+          examSessionId: room.examSessionRef._id
         });
       }
     }

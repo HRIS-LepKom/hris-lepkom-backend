@@ -9,8 +9,14 @@ const router = Router();
 
 router.use(asistenAuth);
 
+// Melihat seluruh riwayat penilaian (Bisa diakses semua asisten)
+router.get('/all/history', ctrl.getAllHistory);
+
 // Penilai melihat riwayat mereka sendiri
 router.get('/me/history', requireRole('asisten_penilai'), ctrl.getMyHistory);
+
+// Penilai melihat calas yang harus dinilai
+router.get('/calas-to-score', requireRole('asisten_penilai'), validate(schema.getCalasToScoreSchema, 'query'), ctrl.getCalasToScore);
 
 // Penilai submit nilai
 router.post('/praktek', requireRole('asisten_penilai'), validate(schema.submitPenilaianPraktekSchema), ctrl.submitPraktek);

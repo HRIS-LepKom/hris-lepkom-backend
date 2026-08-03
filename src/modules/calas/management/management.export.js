@@ -34,25 +34,23 @@ export const exportCalasToExcel = async (query) => {
   const pipeline = [
     { $match: filter },
     {
-      $lookup: {
-        from: 'penilaians',
-        localField: '_id',
-        foreignField: 'calasRef',
-        as: 'riwayatPenilaian'
-      }
-    },
-    {
       $addFields: {
         skorAkhirNilai: {
-          $cond: {
-            if: { $gt: [{ $size: "$riwayatPenilaian" }, 0] },
-            then: { $avg: "$riwayatPenilaian.skorKeseluruhan" },
-            else: null
+          $let: {
+            vars: {
+              avgScore: {
+                $avg: [
+                  { $cond: [{ $gt: ["$nilaiUjian.praktek.total", 0] }, "$nilaiUjian.praktek.total", null] },
+                  { $cond: [{ $gt: ["$nilaiUjian.project.total", 0] }, "$nilaiUjian.project.total", null] }
+                ]
+              }
+            },
+            in: { $cond: [{ $eq: ["$$avgScore", null] }, null, "$$avgScore"] }
           }
         }
       }
     },
-    { $project: { riwayatPenilaian: 0, password: 0, refreshToken: 0, resetPasswordToken: 0 } },
+    { $project: { password: 0, refreshToken: 0, resetPasswordToken: 0 } },
     { $sort: sort }
   ];
 

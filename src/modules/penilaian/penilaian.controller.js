@@ -16,3 +16,13 @@ export const getMyHistory = asyncHandler(async (req, res) => {
   const { data, meta } = await penilaianService.getMyHistory(req.asisten._id, req.query);
   sendSuccess(res, data, 'Riwayat penilaian berhasil diambil', 200, meta);
 });
+
+export const getAllHistory = asyncHandler(async (req, res) => {
+  const { data, meta } = await penilaianService.getAllHistory(req.query);
+  sendSuccess(res, data, 'Seluruh riwayat penilaian berhasil diambil', 200, meta);
+});
+
+export const getCalasToScore = asyncHandler(async (req, res) => {
+  const data = await penilaianService.getCalasToScore(req.asisten._id, req.query);
+  sendSuccess(res, data, 'Daftar calas yang harus dinilai berhasil diambil', 200);
+});

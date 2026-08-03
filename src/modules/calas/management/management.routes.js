@@ -40,6 +40,7 @@ router.get('/export',           ctrl.exportToExcel);
 router.get('/filters',          ctrl.getFilters);
 router.get('/template-import',  ctrl.downloadTemplate);
 router.get('/:id',              ctrl.getOne);
+router.get('/:id/dokumen/:jenisDokumen/download', ctrl.downloadDokumenCalas);
 
 // Write — hanya super_admin
 router.post('/',      requireRole('super_admin'), validate(schema.createSchema),        ctrl.create);

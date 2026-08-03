@@ -15,16 +15,14 @@ const ALLOWED_MIME_TYPES = {
     'application/vnd.ms-powerpoint',
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   ], 
-  // File jawaban ujian praktek/project
-  jawaban: [
-    'application/zip',
-    'application/x-zip-compressed',
-    'application/x-rar-compressed',
-    'application/pdf',
+  jawaban_praktek: [
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/pdf',
+  ],
+  jawaban_project: [
     'application/vnd.ms-powerpoint',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   ],
 };
 

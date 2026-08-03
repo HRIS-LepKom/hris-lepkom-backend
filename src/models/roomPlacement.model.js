@@ -20,6 +20,12 @@ const roomPlacementSchema = new Schema(
         ref: "Calas",
       },
     ],
+    pjRuanganList: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Asisten",
+      },
+    ],
     penilaiList: [
       {
         type: Schema.Types.ObjectId,

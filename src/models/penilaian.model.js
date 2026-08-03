@@ -19,6 +19,11 @@ const penilaianSchema = new Schema(
       ref: "ExamSession",
       required: true,
     },
+    roomPlacementRef: {
+      type: Schema.Types.ObjectId,
+      ref: "RoomPlacement",
+      required: true,
+    },
     jenisUjian: {
       type: String,
       required: true,
@@ -54,11 +59,10 @@ penilaianSchema.index(
   { unique: true }
 );
 
-penilaianSchema.pre("save", function (next) {
+penilaianSchema.pre("save", function () {
   const nilaiKriteria = Array.from(this.kriteria.values());
   const total = nilaiKriteria.reduce((sum, n) => sum + n, 0);
   this.skorKeseluruhan = nilaiKriteria.length ? total / nilaiKriteria.length : 0;
-  next();
 });
 
 const Penilaian = mongoose.model("Penilaian", penilaianSchema);

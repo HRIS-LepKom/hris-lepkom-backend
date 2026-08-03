@@ -30,11 +30,11 @@ export const submitPenilaianProjectSchema = {
     deskripsi:     { type: 'string', minLength: 1 },
     kriteria: {
       type: 'object',
-      required: ['penguasaan', 'kreativitas', 'kontribusi', 'presentasi', 'motivasi', 'interpersonal', 'integritas', 'potensi'],
+      required: ['penguasaan', 'kreatifitas', 'kontribusi', 'presentasi', 'motivasi', 'interpersonal', 'integritas', 'potensi'],
       additionalProperties: false,
       properties: {
         penguasaan:    { type: 'number', minimum: 0, maximum: 100 },
-        kreativitas:   { type: 'number', minimum: 0, maximum: 100 },
+        kreatifitas:   { type: 'number', minimum: 0, maximum: 100 },
         kontribusi:    { type: 'number', minimum: 0, maximum: 100 },
         presentasi:    { type: 'number', minimum: 0, maximum: 100 },
         motivasi:      { type: 'number', minimum: 0, maximum: 100 },
@@ -43,5 +43,16 @@ export const submitPenilaianProjectSchema = {
         potensi:       { type: 'number', minimum: 0, maximum: 100 },
       }
     }
+  }
+};
+
+export const getCalasToScoreSchema = {
+  type: 'object',
+  required: ['tanggal', 'jenisUjian'],
+  additionalProperties: true,
+  properties: {
+    tanggal: { type: 'string' },
+    jenisUjian: { type: 'string', enum: ['praktek', 'project'] },
+    search: { type: 'string' }
   }
 };

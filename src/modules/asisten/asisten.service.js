@@ -4,7 +4,6 @@ import Recruitment from '../../models/recruitment.model.js';
 import Materi from '../../models/materi.model.js';
 import Soal from '../../models/soal.model.js';
 import QuestionCard from '../../models/questionCard.model.js';
-import RoomAssignment from '../../models/roomAssignment.model.js';
 import RoomPlacement from '../../models/roomPlacement.model.js';
 import Announcement from '../../models/announcement.model.js';
 import Penilaian from '../../models/penilaian.model.js';
@@ -53,17 +52,41 @@ const getAsistenHistory = async (asistenId) => {
     .sort({ createdAt: -1 })
     .lean();
 
-  history.historyPjRuangan = await RoomAssignment.find({ pjRuanganRef: asistenId })
-    .select('ruangan createdAt examSessionRef')
-    .populate({ path: 'examSessionRef', select: 'sesi tanggal' })
+  const placements = await RoomPlacement.find({
+    $or: [{ pjRuanganList: asistenId }, { penilaiList: asistenId }]
+  })
+    .select('ruangan pjRuanganList penilaiList createdAt examSessionRef')
+    .populate({ path: 'examSessionRef', select: 'tanggal jenisUjian' })
     .sort({ createdAt: -1 })
     .lean();
 
-  history.historyPenilaiRuangan = await RoomPlacement.find({ penilaiList: asistenId })
-    .select('ruangan createdAt examSessionRef')
-    .populate({ path: 'examSessionRef', select: 'sesi tanggal' })
-    .sort({ createdAt: -1 })
-    .lean();
+  const historyRuangan = [];
+  
+  placements.forEach(p => {
+    const pjList = p.pjRuanganList ? p.pjRuanganList.map(id => id.toString()) : [];
+    const penilaiList = p.penilaiList ? p.penilaiList.map(id => id.toString()) : [];
+    const aIdStr = asistenId.toString();
+
+    let rolePenugasan = '';
+    if (pjList.includes(aIdStr) && penilaiList.includes(aIdStr)) {
+        rolePenugasan = 'PJ Ruangan & Asisten Penilai';
+    } else if (pjList.includes(aIdStr)) {
+        rolePenugasan = 'PJ Ruangan';
+    } else if (penilaiList.includes(aIdStr)) {
+        rolePenugasan = 'Asisten Penilai';
+    }
+
+    historyRuangan.push({
+      _id: p._id,
+      ruangan: p.ruangan,
+      rolePenugasan,
+      tanggal: p.examSessionRef?.tanggal,
+      jenisUjian: p.examSessionRef?.jenisUjian,
+      createdAt: p.createdAt
+    });
+  });
+
+  history.historyRuangan = historyRuangan;
 
   history.historyPengumuman = await Announcement.find({ dibuatOleh: asistenId })
     .select('judul createdAt')
@@ -76,12 +99,12 @@ const getAsistenHistory = async (asistenId) => {
 export const getHistoryPenilaian = async (asistenId, query) => {
   const { page, limit, skip } = getPaginationParams(query);
   
-  const filter = { asistenPenilai: asistenId };
+  const filter = { penilaiRef: asistenId };
 
   const [data, total] = await Promise.all([
     Penilaian.find(filter)
-      .populate({ path: 'calasRef', select: 'namaCalas npm' })
-      .select('calasRef nilaiAkhir status createdAt')
+      .populate({ path: 'calasRef', select: 'namaCalas npm statusRekrutmen' })
+      .select('calasRef skorKeseluruhan jenisUjian kriteria deskripsi createdAt')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -89,7 +112,22 @@ export const getHistoryPenilaian = async (asistenId, query) => {
     Penilaian.countDocuments(filter),
   ]);
 
-  return { data, meta: buildPaginationMeta(total, page, limit) };
+  const formattedData = data.map(item => {
+    let statusDisplay = 'Menunggu';
+    if (item.calasRef?.statusRekrutmen?.hasil === 'lolos') statusDisplay = 'Lulus';
+    if (item.calasRef?.statusRekrutmen?.hasil === 'tidak_lolos') statusDisplay = 'Gagal';
+    
+    return {
+      ...item,
+      nilaiAkhir: item.skorKeseluruhan,
+      status: statusDisplay,
+      kriteria: item.kriteria || {},
+      deskripsi: item.deskripsi || '',
+      jenisUjian: item.jenisUjian
+    };
+  });
+
+  return { data: formattedData, meta: buildPaginationMeta(total, page, limit) };
 };
 
 // ─── Exports ─────────────────────────────────────────────────────────────────
@@ -145,6 +183,10 @@ export const getAll = async (query) => {
       filter.kelasSaatIni = { $regex: `^${query.kelasSaatIni}`, $options: 'i' };
     }
   }
+
+  if (query.nama) filter.nama = { $regex: query.nama, $options: 'i' };
+  if (query.idAsisten) filter.idAsisten = { $regex: query.idAsisten, $options: 'i' };
+  if (query.npm) filter.npm = { $regex: query.npm, $options: 'i' };
 
   if (query.search) {
     filter.$or = [

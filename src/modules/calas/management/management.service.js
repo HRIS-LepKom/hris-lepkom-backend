@@ -62,6 +62,13 @@ export const getAll = async (query) => {
   if (query.tahapSaatIni) filter['statusRekrutmen.tahapSaatIni'] = query.tahapSaatIni;
   if (query.hasil) filter['statusRekrutmen.hasil'] = query.hasil;
   if (query.isBanned !== undefined) filter.isBanned = query.isBanned === 'true';
+
+  if (query.namaCalas) filter.namaCalas = { $regex: query.namaCalas, $options: 'i' };
+  if (query.idCalas) filter.idCalas = { $regex: query.idCalas, $options: 'i' };
+  if (query.npm) filter.npm = { $regex: query.npm, $options: 'i' };
+  if (query.emailCalas) filter.emailCalas = { $regex: query.emailCalas, $options: 'i' };
+  if (query.kelas) filter.kelas = { $regex: query.kelas, $options: 'i' };
+
   if (query.search) {
     filter.$or = [
       { namaCalas:  { $regex: query.search, $options: 'i' } },
@@ -81,25 +88,23 @@ export const getAll = async (query) => {
   const pipeline = [
     { $match: filter },
     {
-      $lookup: {
-        from: 'penilaians',
-        localField: '_id',
-        foreignField: 'calasRef',
-        as: 'riwayatPenilaian'
-      }
-    },
-    {
       $addFields: {
         skorAkhirNilai: {
-          $cond: {
-            if: { $gt: [{ $size: "$riwayatPenilaian" }, 0] },
-            then: { $avg: "$riwayatPenilaian.skorKeseluruhan" },
-            else: null
+          $let: {
+            vars: {
+              avgScore: {
+                $avg: [
+                  { $cond: [{ $gt: ["$nilaiUjian.praktek.total", 0] }, "$nilaiUjian.praktek.total", null] },
+                  { $cond: [{ $gt: ["$nilaiUjian.project.total", 0] }, "$nilaiUjian.project.total", null] }
+                ]
+              }
+            },
+            in: { $cond: [{ $eq: ["$$avgScore", null] }, null, "$$avgScore"] }
           }
         }
       }
     },
-    { $project: { riwayatPenilaian: 0, password: 0, refreshToken: 0, resetPasswordToken: 0 } },
+    { $project: { password: 0, refreshToken: 0, resetPasswordToken: 0 } },
     { $sort: sort }
   ];
 

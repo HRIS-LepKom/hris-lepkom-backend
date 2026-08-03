@@ -1,4 +1,4 @@
-export const biodataTemplate = ({ namaCalas }) => {
+export const biodataTemplate = ({ namaCalas, clientUrl }) => {
   const subject = "Selamat! Kamu Lolos Screening - Waktunya Lengkapi Dokumen 📝";
   const html = `
 <!DOCTYPE html>
@@ -39,7 +39,7 @@ export const biodataTemplate = ({ namaCalas }) => {
       </ul>
 
       <div style="text-align: center; margin-top: 30px;">
-        <a href="#" class="btn">Login ke Dashboard Sekarang</a>
+        <a href="${clientUrl}" class="btn">Login ke Dashboard Sekarang</a>
       </div>
 
       <p style="margin-top: 40px; font-size: 14px;">Pastikan kamu melengkapi semuanya sebelum batas waktu yang ditentukan di dashboard ya. Kami tunggu kelengkapan berkasmu!</p>
@@ -54,7 +54,7 @@ export const biodataTemplate = ({ namaCalas }) => {
 </html>
   `;
   
-  const text = `Halo ${namaCalas},\n\nSelamat! Kamu lolos tahap Screening. Segera lengkapi biodata dan dokumen (CV, KRS, Rangkuman Nilai) di dashboard.\n\nPanitia Rekrutmen Asisten LEPKOM`;
+  const text = `Halo ${namaCalas},\n\nSelamat! Kamu lolos tahap Screening. Segera lengkapi biodata dan dokumen (CV, KRS, Rangkuman Nilai) di dashboard melalui tautan berikut: ${clientUrl}\n\nPanitia Rekrutmen Asisten LEPKOM`;
   
   return { subject, html, text };
 };

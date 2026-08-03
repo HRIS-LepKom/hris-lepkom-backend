@@ -183,8 +183,16 @@ const calasSchema = new Schema(
       type: String,
       default: null,
     },
+    jawabanPraktekUploadedAt: {
+      type: Date,
+      default: null,
+    },
     jawabanProject: {
       type: String,
+      default: null,
+    },
+    jawabanProjectUploadedAt: {
+      type: Date,
       default: null,
     },
 
@@ -228,6 +236,17 @@ const calasSchema = new Schema(
     isBanned: {
       type: Boolean,
       default: false,
+    },
+    
+    nilaiUjian: {
+      praktek: {
+        kriteria: { type: Map, of: Number, default: {} },
+        total: { type: Number, default: 0 }
+      },
+      project: {
+        kriteria: { type: Map, of: Number, default: {} },
+        total: { type: Number, default: 0 }
+      }
     },
     refreshToken: {
       type: String,
