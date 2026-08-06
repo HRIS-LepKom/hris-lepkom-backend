@@ -30,8 +30,15 @@ export const getAll = async (query) => {
   });
 
   const filter = { ...smartFilter };
+  
+  // Global search
   if (query.search) {
     filter.namaMateri = { $regex: query.search, $options: 'i' };
+  }
+  
+  // Specific column search
+  if (query.namaMateri) {
+    filter.namaMateri = { $regex: query.namaMateri, $options: 'i' };
   }
 
   // Smart global sort — pengurutan dilakukan di level DB terhadap seluruh data
