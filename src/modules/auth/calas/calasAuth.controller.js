@@ -15,8 +15,7 @@ export const login = asyncHandler(async (req, res) => {
 
 export const refresh = asyncHandler(async (req, res) => {
   const candidates = getAllCookieValues(req, COOKIE_CALAS_NAME);
-  const { accessToken, rawRefreshToken, calas } = await calasAuthService.refreshAccessToken(candidates);
-  setRefreshCookie(res, rawRefreshToken, req, COOKIE_CALAS_NAME);
+  const { accessToken, calas } = await calasAuthService.refreshAccessToken(candidates);
   sendSuccess(res, { accessToken, calas }, 'Token berhasil diperbarui');
 });
 

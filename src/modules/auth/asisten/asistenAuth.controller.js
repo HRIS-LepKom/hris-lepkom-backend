@@ -20,8 +20,7 @@ export const login = asyncHandler(async (req, res) => {
 
 export const refresh = asyncHandler(async (req, res) => {
   const candidates = getAllCookieValues(req, COOKIE_ASISTEN_NAME);
-  const { accessToken, rawRefreshToken, asisten } = await asistenAuthService.refreshAccessToken(candidates);
-  setRefreshCookie(res, rawRefreshToken, req, COOKIE_ASISTEN_NAME);
+  const { accessToken, asisten } = await asistenAuthService.refreshAccessToken(candidates);
   sendSuccess(res, { accessToken, asisten }, 'Token berhasil diperbarui');
 });
 

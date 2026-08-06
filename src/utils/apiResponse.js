@@ -22,7 +22,8 @@ export const sendSuccess = (res, data = null, message = 'Berhasil', statusCode =
 export const sendError = (res, message = 'Terjadi kesalahan', statusCode = 500, errors = null, errorType = null) => {
   return res.status(statusCode).json({
     errorStatus: true,
+    message,
     errorType:   errorType || HTTP_ERROR_TYPES[statusCode] || 'InternalServerError',
     errors:      errors || [{ message, code: statusCode }],
   });
-};
+};

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import Asisten from '../../../models/asisten.model.js';
-import HardResetRequest from '../../../models/hardResetRequest.model.js';
+import HardResetRequest from '../../../models/HardResetRequest.model.js';
 import { signToken } from '../../../utils/jwtHelper.js';
 import { getDefaultPassword } from '../../../utils/defaultPassword.js';
 
@@ -19,7 +19,8 @@ const sanitizeAsisten = (asisten) => ({
 });
 
 const createTokens = async (asisten) => {
-  const accessToken = signToken({ id: asisten._id, role: asisten.role, nama : asisten.nama }, '1h');
+  const expiresIn = process.env.ACCESS_TOKEN_EXPIRY || (process.env.NODE_ENV === 'development' ? '5s' : '1h');
+  const accessToken = signToken({ id: asisten._id, role: asisten.role, nama : asisten.nama }, expiresIn);
   const rawRefreshToken = crypto.randomBytes(40).toString('hex');
   const hashedRefreshToken = crypto.createHash('sha256').update(rawRefreshToken).digest('hex');
   await Asisten.findByIdAndUpdate(asisten._id, { refreshToken: hashedRefreshToken });
@@ -103,13 +104,9 @@ export const refreshAccessToken = async (rawTokens) => {
     throw err;
   }
 
-  const newRaw = crypto.randomBytes(40).toString('hex');
-  const newHashed = crypto.createHash('sha256').update(newRaw).digest('hex');
-  asisten.refreshToken = newHashed;
-  await asisten.save();
-
-  const accessToken = signToken({ id: asisten._id, role: asisten.role }, '1h');
-  return { accessToken, rawRefreshToken: newRaw, asisten: sanitizeAsisten(asisten) };
+  const expiresIn = process.env.ACCESS_TOKEN_EXPIRY || (process.env.NODE_ENV === 'development' ? '5s' : '1h');
+  const accessToken = signToken({ id: asisten._id, role: asisten.role }, expiresIn);
+  return { accessToken, asisten: sanitizeAsisten(asisten) };
 };
 
 export const logout = async (rawTokens) => {
