@@ -25,6 +25,7 @@ import penugasanRoutes      from './modules/penugasan/penugasan.routes.js';
 import penilaianRoutes      from './modules/penilaian/penilaian.routes.js';
 import announcementRoutes   from './modules/announcement/announcement.routes.js';
 import dashboardRoutes      from './modules/dashboard/dashboard.routes.js';
+import jadwalKosongRoutes   from './modules/jadwal/jadwal-kosong/jadwalKosong.routes.js';
 
 const app = express();
 
@@ -79,6 +80,7 @@ app.use('/api/penugasan',             penugasanRoutes);
 app.use('/api/penilaian',             penilaianRoutes);
 app.use('/api/announcement',          announcementRoutes);
 app.use('/api/dashboard',             dashboardRoutes);
+app.use('/api/jadwal/kosong',         jadwalKosongRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

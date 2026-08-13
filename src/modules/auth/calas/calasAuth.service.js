@@ -21,7 +21,7 @@ const sanitizeCalas = (calas) => ({
 });
 
 const createTokens = async (calas) => {
-  const expiresIn = process.env.ACCESS_TOKEN_EXPIRY || (process.env.NODE_ENV === 'development' ? '5s' : '1h');
+  const expiresIn = process.env.ACCESS_TOKEN_EXPIRY || (process.env.NODE_ENV === 'development' ? '1h' : '1h');
   const accessToken        = signToken({ id: calas._id, nama: calas.namaCalas }, expiresIn);
   const rawRefreshToken    = crypto.randomBytes(40).toString('hex');
   const hashedRefreshToken = crypto.createHash('sha256').update(rawRefreshToken).digest('hex');
@@ -85,7 +85,7 @@ export const refreshAccessToken = async (rawTokens) => {
     throw err;
   }
 
-  const expiresIn = process.env.ACCESS_TOKEN_EXPIRY || (process.env.NODE_ENV === 'development' ? '5s' : '1h');
+  const expiresIn = process.env.ACCESS_TOKEN_EXPIRY || (process.env.NODE_ENV === 'development' ? '1h' : '1h');
   const accessToken = signToken({ id: calas._id, nama: calas.namaCalas }, expiresIn);
   return { accessToken, calas: sanitizeCalas(calas) };
 };

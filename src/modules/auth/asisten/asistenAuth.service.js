@@ -19,7 +19,7 @@ const sanitizeAsisten = (asisten) => ({
 });
 
 const createTokens = async (asisten) => {
-  const expiresIn = process.env.ACCESS_TOKEN_EXPIRY || (process.env.NODE_ENV === 'development' ? '5s' : '1h');
+  const expiresIn = process.env.ACCESS_TOKEN_EXPIRY || (process.env.NODE_ENV === 'development' ? '1h' : '1h');
   const accessToken = signToken({ id: asisten._id, role: asisten.role, nama : asisten.nama }, expiresIn);
   const rawRefreshToken = crypto.randomBytes(40).toString('hex');
   const hashedRefreshToken = crypto.createHash('sha256').update(rawRefreshToken).digest('hex');
@@ -104,7 +104,7 @@ export const refreshAccessToken = async (rawTokens) => {
     throw err;
   }
 
-  const expiresIn = process.env.ACCESS_TOKEN_EXPIRY || (process.env.NODE_ENV === 'development' ? '5s' : '1h');
+  const expiresIn = process.env.ACCESS_TOKEN_EXPIRY || (process.env.NODE_ENV === 'development' ? '1h' : '1h');
   const accessToken = signToken({ id: asisten._id, role: asisten.role }, expiresIn);
   return { accessToken, asisten: sanitizeAsisten(asisten) };
 };
@@ -224,16 +224,36 @@ export const getAllHardResetRequests = async (query) => {
     filter.status = query.status;
   }
 
-  // Handle search by inputAwal OR asisten name
+  const asistenMatch = {};
+
+  // Global search
   if (query.search) {
-    const asistenIds = await Asisten.find({
-      nama: { $regex: query.search, $options: 'i' }
-    }).select('_id');
-    
+    asistenMatch.nama = { $regex: query.search, $options: 'i' };
+  }
+  
+  // Specific column filters
+  if (query['asistenRef.nama']) {
+    asistenMatch.nama = { $regex: query['asistenRef.nama'], $options: 'i' };
+  }
+  if (query['asistenRef.idAsisten']) {
+    asistenMatch.idAsisten = { $regex: query['asistenRef.idAsisten'], $options: 'i' };
+  }
+
+  if (query.inputAwal) {
+    filter.inputAwal = { $regex: query.inputAwal, $options: 'i' };
+  }
+
+  // Handle global search OR logic for inputAwal vs Asisten nama
+  if (query.search) {
+    const asistenIds = await Asisten.find(asistenMatch).select('_id');
     filter.$or = [
       { inputAwal: { $regex: query.search, $options: 'i' } },
       { asistenRef: { $in: asistenIds.map(a => a._id) } }
     ];
+  } else if (Object.keys(asistenMatch).length > 0) {
+    // Handle specific asisten filters (AND logic)
+    const asistenIds = await Asisten.find(asistenMatch).select('_id');
+    filter.asistenRef = { $in: asistenIds.map(a => a._id) };
   }
 
   const sortOptions = {};
