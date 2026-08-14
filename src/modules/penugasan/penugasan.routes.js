@@ -25,10 +25,10 @@ router.get(
   ctrl.getAvailablePenilai
 );
 
-// 2. CRUD Penempatan Ruangan Asisten (Super Admin & Korlap)
+// 2. Read Penempatan Ruangan (Super Admin & Korlap & PJ Ruangan)
 router.get(
   '/ruangan',
-  requireRole('super_admin', 'koordinator_lapangan'),
+  requireRole('super_admin', 'koordinator_lapangan', 'penanggung_jawab_ruangan'),
   ctrl.getAllRoomPlacements
 );
 
@@ -52,18 +52,18 @@ router.delete(
   ctrl.deletePlacement
 );
 
-// 3. Endpoint ketersediaan Calas (Super Admin & Korlap)
+// 3. Endpoint ketersediaan Calas (Super Admin & Korlap & PJ Ruangan)
 router.get(
   '/calas/available',
-  requireRole('super_admin', 'koordinator_lapangan'),
+  requireRole('super_admin', 'koordinator_lapangan', 'penanggung_jawab_ruangan'),
   validate(schema.availableCalasSchema, 'query'),
   ctrl.getAvailableCalas
 );
 
-// 4. Update Penempatan Calas (Super Admin & Korlap)
+// 4. Update Penempatan Calas (Super Admin & Korlap & PJ Ruangan)
 router.put(
   '/ruangan/:id/calas',
-  requireRole('super_admin', 'koordinator_lapangan'),
+  requireRole('super_admin', 'koordinator_lapangan', 'penanggung_jawab_ruangan'),
   validate(schema.updateCalasPlacementSchema),
   ctrl.updateCalasPlacement
 );
