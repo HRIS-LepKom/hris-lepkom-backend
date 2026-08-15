@@ -105,7 +105,7 @@ export const getPenilaiStats = async (asistenId) => {
   // Find all room placements where this asisten is a penilai
   const myRooms = await RoomPlacement.find({ penilaiList: asistenId })
     .populate('examSessionRef')
-    .populate('calasList', 'namaCalas idCalas');
+    .populate('calasList', 'namaCalas idCalas npm kelas jurusan ipk asalSekolah wilayah');
 
   let totalToEvaluate = 0;
   let evaluated = 0;
@@ -133,6 +133,12 @@ export const getPenilaiStats = async (asistenId) => {
           calasId: calas.idCalas,
           calasRef: calas._id,
           namaCalas: calas.namaCalas,
+          npm: calas.npm,
+          kelas: calas.kelas,
+          jurusan: calas.jurusan,
+          ipk: calas.ipk,
+          asalSekolah: calas.asalSekolah,
+          wilayah: calas.wilayah,
           jenisUjian,
           ruangan: room.ruangan,
           examSessionId: room.examSessionRef._id

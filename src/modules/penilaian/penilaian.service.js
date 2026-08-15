@@ -231,7 +231,7 @@ export const getCalasToScore = async (asistenId, query) => {
   }
 
   const calasData = await Calas.find(calasFilter)
-    .select('_id idCalas namaCalas npm kelas jurusan')
+    .select('_id idCalas namaCalas npm kelas jurusan ipk asalSekolah wilayah')
     .sort({ namaCalas: 1 })
     .lean();
 
