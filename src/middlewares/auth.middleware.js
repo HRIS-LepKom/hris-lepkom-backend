@@ -67,10 +67,23 @@ export const calasAuth = createAuthMiddleware({
   Model: Calas,
   reqKey: 'calas',
   statusCheck: {
-    isAllowed: (calas) => ({
-      allowed: !calas.isBanned,
-      message: 'Akun Anda telah diblokir',
-    }),
+    isAllowed: (calas, req) => {
+      if (calas.isBanned) {
+        return { allowed: false, message: 'Akun Anda telah diblokir' };
+      }
+
+      if (calas.wajibGantiPassword) {
+        const path = req.originalUrl || '';
+        if (!path.includes('/change-password') && !path.includes('/logout')) {
+          return {
+            allowed: false,
+            message: 'Anda diwajibkan mengganti password sebelum mengakses sistem',
+          };
+        }
+      }
+
+      return { allowed: true };
+    },
   },
 });
 
@@ -107,6 +120,9 @@ export const calasOrPjAuth = asyncHandler(async (req, res, next) => {
   const calas = await Calas.findById(decoded.id).select('-password');
   if (calas) {
     if (calas.isBanned) return sendError(res, 'Akun Calas Anda telah diblokir', 403);
+    if (calas.wajibGantiPassword) {
+      return sendError(res, 'Anda diwajibkan mengganti password sebelum mengakses sistem', 403);
+    }
     req.calas = calas;
     req.userType = 'calas';
     return next();

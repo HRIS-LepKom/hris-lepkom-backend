@@ -30,14 +30,16 @@ const createTokens = async (calas) => {
 };
 
 export const login = async ({ identifier, password }) => {
+  const trimmed = identifier?.trim();
   const calas = await Calas.findOne({
     $or: [
-      { idCalas: identifier },
-      { emailCalas: identifier?.toLowerCase() },
+      { idCalas: trimmed },
+      { npm: trimmed },
+      { emailCalas: trimmed?.toLowerCase() },
     ],
   }).select('+password');
 
-  const invalidErr = new Error('ID/email atau password salah');
+  const invalidErr = new Error('ID/NPM/Email atau password salah');
   invalidErr.statusCode = 401;
 
   if (!calas) throw invalidErr;
@@ -104,10 +106,12 @@ export const logout = async (rawTokens) => {
 
 // Forgot password — kirim email dengan link reset (token berlaku 1 jam).
 export const forgotPassword = async ({ identifier }) => {
+  const trimmed = identifier?.trim();
   const calas = await Calas.findOne({
     $or: [
-      { idCalas: identifier },
-      { emailCalas: identifier?.toLowerCase() },
+      { idCalas: trimmed },
+      { npm: trimmed },
+      { emailCalas: trimmed?.toLowerCase() },
     ],
   });
 
