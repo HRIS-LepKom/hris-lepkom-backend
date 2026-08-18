@@ -8,12 +8,13 @@ import * as ctrl             from './asistenAuth.controller.js';
 
 const router = Router();
 
-// Max 10 request per 15 menit per IP — proteksi brute-force login & hard reset.
-// Di-skip otomatis saat development (lihat rateLimiter.middleware.js).
+// Max 30 request gagal per 15 menit per IP — proteksi brute-force login & hard reset.
+// Toleransi untuk jaringan bersama / Wi-Fi kampus (NAT). Request berhasil tidak dihitung.
 const authLimiter = createRateLimiter({
-  windowMs: 15 * 60 * 1000,
-  max:      10,
-  message:  'Terlalu banyak percobaan. Silakan coba lagi setelah 15 menit.',
+  windowMs:               15 * 60 * 1000,
+  max:                    30,
+  skipSuccessfulRequests: true,
+  message:                'Terlalu banyak percobaan login gagal. Silakan coba lagi setelah 15 menit.',
 });
 
 // POST /api/auth/asisten/register — bootstrap super admin (sekali pakai)

@@ -7,12 +7,13 @@ import * as ctrl             from './calasAuth.controller.js';
 
 const router = Router();
 
-// Max 10 request per 15 menit per IP — proteksi brute-force login & forgot password.
-// Di-skip otomatis saat development (lihat rateLimiter.middleware.js).
+// Max 30 request gagal per 15 menit per IP — proteksi brute-force login & forgot password.
+// Toleransi untuk jaringan bersama / Wi-Fi kampus (NAT). Request berhasil tidak dihitung.
 const authLimiter = createRateLimiter({
-  windowMs: 15 * 60 * 1000,
-  max:      10,
-  message:  'Terlalu banyak percobaan. Silakan coba lagi setelah 15 menit.',
+  windowMs:               15 * 60 * 1000,
+  max:                    30,
+  skipSuccessfulRequests: true,
+  message:                'Terlalu banyak percobaan login gagal. Silakan coba lagi setelah 15 menit.',
 });
 
 // POST /api/auth/calas/login

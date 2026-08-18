@@ -29,6 +29,9 @@ import jadwalKosongRoutes   from './modules/jadwal/jadwal-kosong/jadwalKosong.ro
 
 const app = express();
 
+// Trust reverse proxy (Vercel / Cloudflare / Load Balancer) agar req.ip membaca IP asli klien
+app.set('trust proxy', 1);
+
 app.use(helmet());
 app.use(compression());
 if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
