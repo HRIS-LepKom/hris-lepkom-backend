@@ -83,6 +83,23 @@ export const updateJudul = async (id, judul) => {
   return jadwal;
 };
 
+/**
+ * Hapus jadwal kosong (super_admin only).
+ * Menghapus header JadwalKosong dan semua JadwalKosongEntri yang terkait.
+ * (Tidak menggunakan transaksi sesuai dengan preferensi deployment pada Vercel)
+ */
+export const remove = async (id) => {
+  const jadwal = await JadwalKosong.findByIdAndDelete(id);
+  if (!jadwal) {
+    const err = new Error('Jadwal kosong tidak ditemukan');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  // Hapus semua entri yang merujuk pada jadwal kosong ini
+  await JadwalKosongEntri.deleteMany({ jadwalKosongRef: id });
+};
+
 // ─── Detail Jadwal Kosong ────────────────────────────────────────────────────
 
 /**

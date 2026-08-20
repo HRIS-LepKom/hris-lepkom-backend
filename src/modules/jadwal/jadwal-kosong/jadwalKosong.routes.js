@@ -30,6 +30,13 @@ router.patch(
   ctrl.updateJudul
 );
 
+// Hanya super_admin yang bisa menghapus jadwal kosong
+router.delete(
+  '/:id',
+  requireRole('super_admin'),
+  ctrl.remove
+);
+
 // ─── Detail Jadwal Kosong ───────────────────────────────────────────────────
 // Semua role asisten bisa melihat detail dan list entri
 router.get('/:id', ctrl.getDetail);

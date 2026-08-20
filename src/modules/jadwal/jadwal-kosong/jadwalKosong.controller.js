@@ -36,6 +36,16 @@ export const updateJudul = asyncHandler(async (req, res) => {
   sendSuccess(res, jadwal, 'Judul jadwal kosong berhasil diperbarui');
 });
 
+/**
+ * DELETE /api/jadwal/kosong/:id
+ * Hapus jadwal kosong beserta seluruh entrinya.
+ * Hanya super_admin.
+ */
+export const remove = asyncHandler(async (req, res) => {
+  await jadwalKosongService.remove(req.params.id);
+  sendSuccess(res, null, 'Jadwal kosong beserta seluruh entrinya berhasil dihapus');
+});
+
 // ─── Detail Jadwal Kosong ─────────────────────────────────────────────────────
 
 /**
